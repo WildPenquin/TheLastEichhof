@@ -17,12 +17,21 @@
 
 extern volatile int subtick;
 
-void setxmode(void)
+int run_in_fullscreen = 0;
+
+void toggle_fullscreen (void)
+{
+  run_in_fullscreen = !run_in_fullscreen;
+  setxmode ();
+  setstandardpalette ();
+}
+
+void setxmode (void)
 {
   set_color_depth (8);
   request_refresh_rate (60);
-  set_gfx_mode (GFX_AUTODETECT_WINDOWED,
-  //set_gfx_mode (GFX_AUTODETECT_FULLSCREEN,
+  set_gfx_mode (run_in_fullscreen ? GFX_AUTODETECT_FULLSCREEN
+                                  : GFX_AUTODETECT_WINDOWED,
                 DISPLAY_SCALE * 320,
                 DISPLAY_SCALE * 240, 0, 0);
 }
