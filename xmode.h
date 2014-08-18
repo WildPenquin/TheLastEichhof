@@ -129,7 +129,6 @@ void setstandardpalette(void);
 void glowto(int r, int g, int b);
 void glowin(int dir);
 void glowout(void);
-void setattrib(int m);
 int cyclepalette(int c1, int c2, int pos);
 
 void defstarfield(int n, unsigned char *star);

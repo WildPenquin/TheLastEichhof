@@ -154,10 +154,6 @@ void intro(void)
                  640,
                  350, 0, 0);
 
-   /* This originally called int 10h with AX = 1013h, BH = 01h.
-      ("Select Video DAC Color Page") */
-   //setattrib(1);
-
    //setvanillapalette(0);
    loadEGA("BLICK.PAK");
    paper = loadfile(datapool, "PAPER.FNT");

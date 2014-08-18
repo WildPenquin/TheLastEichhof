@@ -577,13 +577,6 @@ void glowto(int r0, int g0, int b0)
 }
 
 
-void setattrib(int m)
-{
-   /* FIXME: Not implemented yet. */
-   return;
-}
-
-
 void clearscreen(void)
 {
    clear_bitmap (full_pages[0]);
