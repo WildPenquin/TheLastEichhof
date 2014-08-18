@@ -1,7 +1,5 @@
 AUTOMAKE_OPTIONS = foreign
 
-CFLAGS=-g -O0
-
 AM_CPPFLAGS = \
   -DLOCALSTATEDIR=\"$(localstatedir)\" \
   -DDATADIR=\"$(datadir)\"
