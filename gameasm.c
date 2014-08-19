@@ -790,11 +790,11 @@ void keyboard (void)
 int waitforsubtick (void)
 {
   while (!tick) {
+      rest (10);
 #if 1
     if (key[KEY_TAB])
       tick = 1;
 #endif
-    ;
   }
   tick = 0;
   if (subtick_ == 0)
@@ -805,7 +805,7 @@ int waitforsubtick (void)
 void waitfortick (void)
 {
   while (!(tick && subtick_ == 0))
-    ;
+    rest (10);
   tick = 0;
 }
 
