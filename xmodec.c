@@ -549,12 +549,17 @@ int cyclepalette(int c1, int c2, int pos)
    int   i;
    int   n;
 
+   PALETTE cycled_palette;
+
+   memmove (cycled_palette, palette, sizeof (PALETTE));
    if ((n = --pos + c1) < c1) pos = c2 - c1;
    for (i = c2; i >= c1; i--) {
       if (n < c1) n = c2;
-      setcolor(i, palette[n].r, palette[n].g, palette[n].b);
+      cycled_palette[i] = palette[n];
       n--;
    }
+
+   set_palette (cycled_palette);
 
    return pos;
 }
