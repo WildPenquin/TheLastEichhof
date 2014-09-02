@@ -166,13 +166,12 @@ void cmdline(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-
+#if 0
    printf("\n\n\nTHE LAST EICHHOF [c] copyright 1993 by ALPHA-HELIX.\n");
    printf("Release 1.1\n\n");
    printf("This game is FREEWARE. Please copy like crazy.\n");
 
    /* Don't know if this is still valid. */
-#if 0
    printf("If you like it, just send a postcard to ALPHA-HELIX\n");
    printf("                                        Rehhalde 18\n");
    printf("                                        6332 Hagendorn\n");
