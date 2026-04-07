@@ -276,6 +276,10 @@ void *opendatabase(char *file)
    int    mode;
    char byte;
 
+#ifndef DATADIR
+#define DATADIR "."
+#endif
+
    char *fullpath = alloca (strlen (DATADIR) + 1 + strlen (file) + 1);
    sprintf (fullpath, "%s/%s", DATADIR,  file);
 
@@ -469,7 +473,7 @@ void *loadfiledirect(char *file, int flags)
 	 fsize -= 65000; p += 65000;
       }
       nread = fread(p, 1, fsize, filvar);
-      close(filvar);
+      fclose(filvar);
 
       buffer(file, ptr, msize, flags);
    }

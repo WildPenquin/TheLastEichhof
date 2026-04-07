@@ -2,6 +2,9 @@
 #define MAIN_MODULE
 #include "baller.h"
 #include "xmode.h"
+#include "sound.h"
+
+void dispscore (void);
 
 /*  Structure to save a complete position during the game.
     This is used to get back to a 'try again' point if the
@@ -30,18 +33,18 @@ int playscore;                /* Remaining score. */
 short const10d;               /* Faster Division. */
 
 /* Function to access field in starstrc array. */
-int starstrc_member (unsigned char *data, int i, int member)
+int starstrc_member (starstrc_ptr data, int i, int member)
 {
-  data += i * STARSTRC_SIZE;
-  return data[member] + (data[member + 1] << 8);
+  unsigned char *ptr = (unsigned char*)data + i * STARSTRC_SIZE;
+  return ptr[member] + (ptr[member + 1] << 8);
 }
 
-void set_starstrc_member (unsigned char *data, int i, int member,
+void set_starstrc_member (starstrc_ptr data, int i, int member,
                          unsigned short int value)
 {
-  data += i * STARSTRC_SIZE;
-  data[member] = value & 0x00FF;
-  data[member + 1] = (value & 0xFF00) >> 8;
+  unsigned char *ptr = (unsigned char*)data + i * STARSTRC_SIZE;
+  ptr[member] = value & 0x00FF;
+  ptr[member + 1] = (value & 0xFF00) >> 8;
 }
 
 /*
@@ -73,7 +76,7 @@ int defarm (int x, int y, struct armstrc *arm)
      shot:      Which shot should we define?
      x, y:      Define coordinates.
      addr:      addr of shot, that defines this shot. */
-int defshot (int shot, int x, int y, struct anishot *addr)
+void defshot (int shot, int x, int y, struct anishot *addr)
 {
   int ctr = MAXSHOTS;
   struct anishot *ptr = _shot;
@@ -101,7 +104,7 @@ int defshot (int shot, int x, int y, struct anishot *addr)
   ptr->power = ss->power;
   ptr->speed = ss->speed;
 
-  return ptr->object = defobject(intindex[ss->sprite],
+  ptr->object = defobject(intindex[ss->sprite],
                            x + ss->shotx, y + ss->shoty, OBJ_LOW);
 
 }
@@ -185,7 +188,7 @@ void deffoe (short foe, short x, short y, short x0, short y0)
     ptr->dy = our_y0;
     ptr->z1 = our_z1;
 
-    ptr->pixelcnt = max(our_x0, our_y0);
+    ptr->pixelcnt = MAX(our_x0, our_y0);
     ptr->dz = our_x0 / 2;
   }
 

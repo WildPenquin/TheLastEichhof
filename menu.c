@@ -28,6 +28,14 @@
 #include "fileman.h"
 #include "baller.h"
 
+#ifndef O_BINARY
+# define O_BINARY 0
+#endif
+
+#ifndef LOCALSTATEDIR
+#define LOCALSTATEDIR "."
+#endif
+
 void loadconfig(void)
 {
    int filvar;
