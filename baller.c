@@ -166,6 +166,8 @@ void cmdline (int argc, char *argv[]) {
     printf ("\n");
   }
 
+  printf("Starting version %s\n", VERSION);
+
 }
 
 int main (int argc, char *argv[]) {

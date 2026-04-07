@@ -17,6 +17,9 @@
 #define ENDLOGOX		20
 #define ENDLOGOY		110
 
+#define VERTEXTX        220	// Version string X location
+#define VERTEXTY        200	// Version string Y location
+
 #define CREDITDELAY		100
 #define CREDITSPEED		2
 #define STORYSPEED		2
@@ -456,6 +459,7 @@ static int showoptions (struct sprstrc *ofont, struct sprstrc *mspr) {
 	     ofont);
   writetext (MENXTEXT, MENYTEXT + MSTEP * MENUDELTA * 3 + 3, "4 MAINMENU",
 	     ofont);
+  writetext (VERTEXTX, VERTEXTY, VERSION, ofont);
   return 1;
 }
 
