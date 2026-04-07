@@ -76,10 +76,10 @@ void saveconfig (void) {
 
   if ((filvar = open (LOCALSTATEDIR "/CONFIG.HIG",
 		      O_CREAT | O_WRONLY | O_TRUNC | O_BINARY,
-		      S_IWRITE)) == -1
+		      S_IRUSR | S_IWUSR)) == -1
       && (filvar =
 	  open ("CONFIG.HIG", O_CREAT | O_WRONLY | O_TRUNC | O_BINARY,
-		S_IWRITE)) == -1)
+		S_IRUSR | S_IWUSR)) == -1)
     return;
 
   write (filvar, &key_up, sizeof (short));
