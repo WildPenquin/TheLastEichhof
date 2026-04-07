@@ -448,9 +448,13 @@ static int showoptions (struct sprstrc *ofont, struct sprstrc *mspr) {
     writetext (MENXTEXT, MENYTEXT + 3, "1 SOUND ON", ofont);
   else
     writetext (MENXTEXT, MENYTEXT + 3, "1 SOUND OFF", ofont);
-  writetext (MENXTEXT, MENYTEXT + MSTEP * MENUDELTA + 3, "2 CHOOSE KEYS",
+  if (panxplosion (-1))
+    writetext (MENXTEXT, MENYTEXT + MSTEP * MENUDELTA + 3, "2 STEREO", ofont);
+  else
+    writetext (MENXTEXT, MENYTEXT + MSTEP * MENUDELTA + 3, "2 MONO", ofont);
+  writetext (MENXTEXT, MENYTEXT + MSTEP * MENUDELTA * 2 + 3, "3 CHOOSE KEYS",
 	     ofont);
-  writetext (MENXTEXT, MENYTEXT + MSTEP * MENUDELTA * 2 + 3, "3 MAINMENU",
+  writetext (MENXTEXT, MENYTEXT + MSTEP * MENUDELTA * 3 + 3, "4 MAINMENU",
 	     ofont);
   return 1;
 }
@@ -493,6 +497,7 @@ static int options (SAMPLE *snd, int *pobj, int pspr, struct sprstrc *mspr) {
       } else {			// Turn Sound on
 	if (speaker (1)) {
 	  writetext (MENXTEXT, MENYTEXT + 3, "1 SOUND ON ", ofont);
+	  haltsound ();
 	  saveconfig ();
 	} else {
 	  writetext (MENXTEXT, MENYERR, "SOUNDBLASTER", ofont);
@@ -500,7 +505,23 @@ static int options (SAMPLE *snd, int *pobj, int pspr, struct sprstrc *mspr) {
 	}
       }
     }
-    if (key[KEY_2] || (selected == 2 && key[key_fire])) {	// Redefine Keys
+    if (key[KEY_2] || (selected == 2 && key[key_fire])) {	// Stereo on/off
+      if (panxplosion (-1)) {	// Turn to mono sound 
+	writetext (MENXTEXT, MENYTEXT + MSTEP * MENUDELTA * 1 + 3,
+		   "2 MONO        ", ofont);
+	panxplosion (0);
+	panfoesound (0);
+	saveconfig ();
+      } else {			// Turn stereo sound
+	panxplosion (1);
+	panfoesound (1);
+	writetext (MENXTEXT, MENYTEXT + MSTEP * MENUDELTA * 1 + 3,
+		   "2 STEREO      ", ofont);
+	saveconfig ();
+      }
+    }
+
+    if (key[KEY_3] || (selected == 3 && key[key_fire])) {	// Redefine Keys
       killobject (*pobj);
       putspritedirect (mspr, MENXTXT, MENYTXT, 1);	// Clear mentxt
       defkeys (ofont);
@@ -508,7 +529,7 @@ static int options (SAMPLE *snd, int *pobj, int pspr, struct sprstrc *mspr) {
       showpage (page);
       *pobj = defobject (pspr, MENUX, MENUY + 7, OBJ_LOW);
     }
-    if (key[KEY_3] || (selected == 3 && key[key_fire])) {	// Quit Options
+    if (key[KEY_4] || (selected == 4 && key[key_fire])) {	// Quit Options
       quit = TRUE;
     }
     if (key[key_up] && selected > 1) {	// Up
@@ -519,7 +540,7 @@ static int options (SAMPLE *snd, int *pobj, int pspr, struct sprstrc *mspr) {
       }
       selected--;
     }
-    if (key[key_down] && selected < 3) {	// Down
+    if (key[key_down] && selected < 4) {	// Down
       if (selected == 1) {
 	writetext (MENXTEXT, MENYERR, "            ", ofont);
 	writetext (MENXTEXT, MENYERR + ofont->ys + 1, "          ", ofont);

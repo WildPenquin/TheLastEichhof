@@ -477,7 +477,9 @@ void a_foe (void) {
 	  ptr->savey = _obj[ptr->object].ya;
 	  goto nextcoord;
 	case FOESOUND:
-	  playsample (ptrindex[lsndofs + ptr->cpath[1]]);
+	  int pan =
+	    127 + panxplosion (-1) * (_obj[ptr->object].xa * 255 / 320 - 127);
+	  playsample_pan (ptrindex[lsndofs + ptr->cpath[1]], pan, false);
 	  ptr->cpath += 2;
 	  goto nextcoord;
 	}
@@ -559,7 +561,8 @@ void a_expl (void) {
       ptr->data++;
       break;
     case EXPLSOUND:
-      playsample (ptrindex[lsndofs + ptr->data[1]]);
+      int pan = 127 + panxplosion (-1) * (ptr->x * 255 / 320 - 127);
+      playsample_pan (ptrindex[lsndofs + ptr->data[1]], pan, false);
       ptr->data++;
       goto nextcommand;
     case EXPLREMOVEOBJ:

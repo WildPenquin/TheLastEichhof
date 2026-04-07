@@ -141,6 +141,9 @@ void intro (void) {
   // Switch to 640x350 mode.
   set_gfx_mode (GFX_AUTODETECT_WINDOWED, 640, 350, 0, 0);
 
+  // Initialize sound (volume)
+  haltsound ();
+
   //setvanillapalette(0);
   loadEGA ("BLICK.PAK");
   paper = loadfile (datapool, "PAPER.FNT");

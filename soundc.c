@@ -3,6 +3,9 @@
 #include <stdio.h>
 
 int soundon = 1;
+int sound_panxplosion = 1;
+int sound_panfoesound = 1;
+
 
 /*speaker:
    state == 0  : Turn sound off.
@@ -19,25 +22,61 @@ int speaker (int state) {
   return soundon;
 }
 
+/*pan settings for explosions and foe sounds
+ * state == 0   : Turn to mono
+ * state == 1   : Turn to stereo (panning according to location)
+ * state == -1  : Query state */
+
+int panxplosion (int state) {
+  if (state == -1)
+    return sound_panxplosion;
+
+  sound_panxplosion = state;
+  return sound_panxplosion;
+}
+
+int panfoesound (int state) {
+  if (state == -1)
+    return sound_panfoesound;
+
+  sound_panfoesound = state;
+  return sound_panfoesound;
+}
+
+
 static SAMPLE *playsample_ext (struct sndstrc *s, int loop);
 
 void shutsound (void) {
-  /* Nothing yet. */
+  remove_sound ();
 }
 
 /* Stop all playing sounds. */
 void haltsound (void) {
   remove_sound ();
-  if (soundon)
+  if (soundon) {
+    reserve_voices (8, 0);
+    set_volume_per_voice (3);
     install_sound (DIGI_AUTODETECT, MIDI_NONE, 0);
+  }
 }
 
-void playsample (SAMPLE *s) {
-  play_sample (s, 255, 128, 1000, 0);
+int playsample_pan (SAMPLE *s, int pan, bool loop) {
+  int spl = allocate_voice (s);
+  if (loop)
+    voice_set_playmode (spl, PLAYMODE_LOOP);
+  voice_set_pan (spl, pan);
+  voice_start (spl);
+  release_voice (spl);
+  return spl;
 }
 
-void playloop (SAMPLE *s) {
-  play_sample (s, 255, 128, 1000, 1);
+
+int playsample (SAMPLE *s) {
+  return playsample_pan (s, 127, false);
+}
+
+int playloop (SAMPLE *s) {
+  return playsample_pan (s, 127, true);
 }
 
 

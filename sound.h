@@ -20,10 +20,13 @@ SAMPLE *create_SAMPLE (struct sndstrc *s);
 
 int initsound (int snd_io, int snd_irq, int snd_dma);
 void shutsound (void);
-void playsample (SAMPLE * snd);
-void playloop (SAMPLE * snd);
+int playsample_pan (SAMPLE * snd, int pan, bool loop);
+int playsample (SAMPLE * snd);
+int playloop (SAMPLE * snd);
 void playfile (int filvar, void *buffer, int bs);
 void playfileloop (int filvar, void *buffer, int bs);
 void haltsound (void);
 int soundbusy (void);
 int speaker (int state);
+int panxplosion (int state);
+int panfoesound (int state);
