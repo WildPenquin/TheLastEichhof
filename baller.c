@@ -207,5 +207,6 @@ int main (int argc, char *argv[]) {
 
 // Going down and return to OS.
   powerdown ();
+  printf ("QUIT\n");
   return 0;
 }

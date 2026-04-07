@@ -527,6 +527,7 @@ void playthegame (void) {
 
   do {
     initlevel (stage);
+    printf ("STARTED: level %i \n", stage);
     setplayposition (level.nattacks, level.attack, level.descript->nbigboss);
 
     do {
@@ -538,6 +539,7 @@ void playthegame (void) {
     } while (!feedback && (lifes > 0));
     if (!(cheatlevel & CHEATLIFES))
       lifes++;
+    if (feedback) printf ("ENDED: level %i \n", stage);
     shutlevel ();
     stage++;
     if (!feedback || (stage == LEVELS))
