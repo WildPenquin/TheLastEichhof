@@ -4,6 +4,8 @@
 Original version Alpha-Helix 1993.
 Ported to Allegro library Gavin Smith 2014.
 
+This repo is forked from loonycyborg's repo and minor fixes by WildPenguin 2026.
+
 INSTALLATION
 
 On a Unix-like system, run ./configure followed by make install.  If you want
@@ -152,9 +154,22 @@ are good places for them to go.
 
 =============================================================================
 
+Changes:
+
+2.0 version released on Sourceforge
+    - further worked on by Adam Borowski and loonycyborg on github
+
+2.0w - a fork from loonycyborg's fork with minor fixes by WildPenguin:
+    - Sound is not clipping when multiple sound effects play at the same time
+    - Sound is panning according to enemy location (toggleable in the menu)
+    - BEER.DAT restored from original DOS version (HS soing had a minor glitch)
+    - Some output to STDOUT to facilitate autosplitting / speedrunning
+
+=============================================================================
 WEB LINKS
 
 SourceForge home https://sourceforge.net/projects/lasteichhof/
+Forked from: https://github.com/loonycyborg/TheLastEichhof
 
 Alpha-Helix used to have a website at
 http://www.ife.ee.ethz.ch/~ammann/alphahelix/eichhof/.  The Internet Archive
