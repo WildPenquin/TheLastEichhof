@@ -166,7 +166,7 @@ void cmdline (int argc, char *argv[]) {
     printf ("\n");
   }
 
-  printf("Starting version %s\n", VERSION);
+  printf ("Starting version %s\n", VERSION);
 
 }
 
@@ -198,7 +198,7 @@ int main (int argc, char *argv[]) {
 
 // Open date bases.
   initfilemanager (40, 512, 8192, error);
-  datapool = opendatabase ("BEER.DAT");
+  datapool = opendatabase (findbeerfile (BEER_DATAFILE));
 
   intro ();			// Show Blick intro.
 

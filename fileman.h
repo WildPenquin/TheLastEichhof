@@ -21,3 +21,12 @@ void closefile (FILE * filvar);
 
 // Available only if DEBUG is defined.
 void printbuffer (void);
+
+// List files the game needs here
+enum beerfile {
+  BEER_DATAFILE,
+  BEER_CONFIG_HISCORE
+};
+
+// function to return pointer with full path to beerfile
+char *findbeerfile (enum beerfile);

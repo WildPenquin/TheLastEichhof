@@ -43,14 +43,12 @@ void loadconfig (void) {
   int filvar;
   int sound;
 
-  char *fullpath = alloca (strlen (LOCALSTATEDIR) + 1
-			   + strlen ("CONFIG.HIG") + 1);
-  sprintf (fullpath, "%s/%s", LOCALSTATEDIR, "CONFIG.HIG");
+  char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
+  printf ("Opening conf file %s\n", fullpath);
 
   /* Look for installed high score file; failing that, look in current
      directory. */
-  if ((filvar = open (fullpath, O_RDONLY | O_BINARY, S_IREAD)) == -1
-      && (filvar = open ("CONFIG.HIG", O_RDONLY | O_BINARY, S_IREAD)) == -1) {
+  if ((filvar = open (fullpath, O_RDONLY | O_BINARY, S_IREAD)) == -1) {
     key_up = KEY_UP;
     key_down = KEY_DOWN;
     key_left = KEY_LEFT;
@@ -77,12 +75,12 @@ void saveconfig (void) {
   int filvar;
   int sound;
 
-  if ((filvar = open (LOCALSTATEDIR "/CONFIG.HIG",
+  char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
+
+  printf ("Saving config to %s\n", fullpath);
+  if ((filvar = open (fullpath,
 		      O_CREAT | O_WRONLY | O_TRUNC | O_BINARY,
-		      S_IRUSR | S_IWUSR)) == -1
-      && (filvar =
-	  open ("CONFIG.HIG", O_CREAT | O_WRONLY | O_TRUNC | O_BINARY,
-		S_IRUSR | S_IWUSR)) == -1)
+		      S_IRUSR | S_IWUSR)) == -1)
     return;
 
   write (filvar, &key_up, sizeof (short));

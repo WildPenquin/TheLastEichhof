@@ -19,6 +19,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
 #include "fileman.h"
 
@@ -72,6 +74,75 @@ static void (*error) (char *text, int code, ...);
 static void errf (char *text, int code, ...) {
   return;
 }
+
+char beerconfigfile[MAXPATH] = "0";
+char beerdatafile[MAXPATH] = "0";
+
+/*------------------------------------------------------
+Function: finbeerfile
+
+Function to return FULL PATH to files
+probably overkill. 
+------------------------------------------------------*/
+char *findbeerfile (enum beerfile file_entry) {
+  switch (file_entry) {
+  case BEER_DATAFILE:		// in DATADIR/PACKAGE_NAME or local dir
+    if (strcmp (beerdatafile, "0") != 0)
+      return beerdatafile;
+    char fulldatapath[MAXPATH];
+    sprintf (fulldatapath, "%s/%s/%s", DATADIR, PACKAGE_NAME, "BEER.DAT");
+    if (access (fulldatapath, R_OK) == 0) {
+      sprintf (beerdatafile, fulldatapath);
+    } else if (access ("BEER.DAT", R_OK) == 0) {
+      sprintf (beerdatafile, fulldatapath);
+    } else {
+      return (NULL);
+    }
+    return beerdatafile;
+    break;
+
+  case BEER_CONFIG_HISCORE:	// Order of search: LOCALSTATEDIR, HOME. current dir
+    if (strcmp (beerconfigfile, "0") != 0)
+      return beerconfigfile;
+    char *conffilename = "CONFIG.HIG";
+    char confdir[MAXPATH];	// directory
+    char fullconfpath[MAXPATH];	// the actual file
+    //
+    // [1] Let's try global (typically, in /var...)
+    sprintf (fullconfpath, "%s/%s", LOCALSTATEDIR, conffilename);
+    if (access (fullconfpath, W_OK) == 0) {
+      sprintf (beerconfigfile, fullconfpath);
+      return (beerconfigfile);
+    }
+    // [2] Let's try home dir
+    if (char *xdgconfhome = getenv ("XDG_CONFIG_HOME")) {
+      sprintf (confdir, "%s/%s", xdgconfhome, ".config");
+    } else if (char *userhome = getenv ("HOME")) {
+      sprintf (confdir, "%s/%s", userhome, ".config");
+    }
+    // if { // Make directories if needed and test access
+    int mdr = mkdir (confdir, 0777);	// .config
+    if (mdr != 0 && errno != 17)
+      printf ("Error creating .config dir: %s\n", strerror (errno));
+    sprintf (fullconfpath, "%s/%s", confdir, PACKAGE_NAME);
+    mdr = mkdir (fullconfpath, 0777);	// PACKAGE_NAME = lastbeer
+    if (mdr != 0 && errno != 17) {
+      printf ("Errror creating %s directory: %i: %s\n", fullconfpath, errno,
+	      strerror (errno));
+    } else if (access (fullconfpath, W_OK | X_OK) == 0) {
+      sprintf (fullconfpath, "%s/%s", fullconfpath, conffilename);
+      sprintf (beerconfigfile, fullconfpath);
+      return (beerconfigfile);
+    }
+    // [3] Fallback .
+    sprintf (beerconfigfile, "%s/%s", ".", conffilename);
+    return (beerconfigfile);
+
+
+    break;
+  }
+}
+
 
 /*------------------------------------------------------
 Function: initfilemanager
@@ -283,13 +354,7 @@ void *opendatabase (char *file) {
 #define DATADIR "."
 #endif
 
-  char *fullpath = alloca (strlen (DATADIR) + 1 + strlen (file) + 1);
-  sprintf (fullpath, "%s/%s", DATADIR, file);
-
-  /* Look for installed data file; failing that, look in current
-     directory. */
-  if (!(filvar = fopen (fullpath, "rb"))
-      && !(filvar = fopen (file, "rb"))) {
+  if (!(filvar = fopen (file, "rb"))) {
     (*error) ("opendatabase", ENOENT, file);
     return NULL;
   }
