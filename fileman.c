@@ -27,6 +27,7 @@
 #define TRUE		1
 #define FALSE		0
 
+
 typedef unsigned long ulong;
 typedef unsigned int uint;
 
@@ -78,6 +79,29 @@ static void errf (char *text, int code, ...) {
 char beerconfigfile[MAXPATH] = "0";
 char beerdatafile[MAXPATH] = "0";
 
+const char filenames[2][20] = {
+  {"lastbeer.bin"},
+  {"conf_hs.bin"}
+};
+
+/*------------------------------------------------------
+Function givebeerfilename
+
+Returns the file name of X
+Let's avoid hardcoding filenames in many places
+------------------------------------------------------*/
+const char *givebeerfilename (enum beerfile file_entry) {
+  switch (file_entry) {
+  case BEER_DATAFILE:
+    return (&filenames[0][0]);
+    break;
+  case BEER_CONFIG_HISCORE:
+    return (&filenames[1][0]);
+    break;
+  }
+}
+
+
 /*------------------------------------------------------
 Function: finbeerfile
 
@@ -85,17 +109,23 @@ Function to return FULL PATH to files
 probably overkill. 
 ------------------------------------------------------*/
 char *findbeerfile (enum beerfile file_entry) {
+  const char *filename = givebeerfilename (file_entry);
   switch (file_entry) {
   case BEER_DATAFILE:		// in DATADIR/PACKAGE_NAME or local dir
     if (strcmp (beerdatafile, "0") != 0)
       return beerdatafile;
+    const char *datafilename = filename;
     char fulldatapath[MAXPATH];
-    sprintf (fulldatapath, "%s/%s/%s", DATADIR, PACKAGE_NAME, "BEER.DAT");
+    // [1] look in DATADIR/PACKAGENAME:
+    sprintf (fulldatapath, "%s/%s/%s", DATADIR, PACKAGE_NAME, datafilename);
     if (access (fulldatapath, R_OK) == 0) {
       sprintf (beerdatafile, fulldatapath);
-    } else if (access ("BEER.DAT", R_OK) == 0) {
-      sprintf (beerdatafile, fulldatapath);
+      // [2] look in CURRENT DIR:
+    } else if (access (datafilename, R_OK) == 0) {
+      sprintf (beerdatafile, datafilename);
+      // [3] bail out, can not continue...
     } else {
+      printf ("File not found: %s\n", datafilename);
       return (NULL);
     }
     return beerdatafile;
@@ -104,11 +134,11 @@ char *findbeerfile (enum beerfile file_entry) {
   case BEER_CONFIG_HISCORE:	// Order of search: LOCALSTATEDIR, HOME. current dir
     if (strcmp (beerconfigfile, "0") != 0)
       return beerconfigfile;
-    char *conffilename = "CONFIG.HIG";
+    const char *conffilename = filename;
     char confdir[MAXPATH];	// directory
     char fullconfpath[MAXPATH];	// the actual file
     //
-    // [1] Let's try global (typically, in /var...)
+    // [1] Let's try global (LOCALSTATEDIR - typically, in /var...)
     sprintf (fullconfpath, "%s/%s", LOCALSTATEDIR, conffilename);
     if (access (fullconfpath, W_OK) == 0) {
       sprintf (beerconfigfile, fullconfpath);
@@ -116,17 +146,20 @@ char *findbeerfile (enum beerfile file_entry) {
     }
     // [2] Let's try home dir
     if (char *xdgconfhome = getenv ("XDG_CONFIG_HOME")) {
-      sprintf (confdir, "%s/%s", xdgconfhome, ".config");
+      sprintf (confdir, "%s", xdgconfhome);
     } else if (char *userhome = getenv ("HOME")) {
       sprintf (confdir, "%s/%s", userhome, ".config");
+    } else {
+      sprintf (confdir, "%s/", ".");
     }
-    // if { // Make directories if needed and test access
+    // Make directories if needed and test access
+    // might create ./.config, change this?
     int mdr = mkdir (confdir, 0777);	// .config
-    if (mdr != 0 && errno != 17)
+    if (mdr != 0 && errno != EEXIST)
       printf ("Error creating .config dir: %s\n", strerror (errno));
     sprintf (fullconfpath, "%s/%s", confdir, PACKAGE_NAME);
     mdr = mkdir (fullconfpath, 0777);	// PACKAGE_NAME = lastbeer
-    if (mdr != 0 && errno != 17) {
+    if (mdr != 0 && errno != EEXIST) {
       printf ("Errror creating %s directory: %i: %s\n", fullconfpath, errno,
 	      strerror (errno));
     } else if (access (fullconfpath, W_OK | X_OK) == 0) {
@@ -354,6 +387,7 @@ void *opendatabase (char *file) {
 #define DATADIR "."
 #endif
 
+  printf ("Opening database file %s\n", file);
   if (!(filvar = fopen (file, "rb"))) {
     (*error) ("opendatabase", ENOENT, file);
     return NULL;
