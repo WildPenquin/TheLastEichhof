@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <linux/limits.h>
 
 #include "fileman.h"
 
@@ -47,11 +48,9 @@ struct filestrc {
   long fptr;			// File pointer to access it's data.
 };
 
-/* TODO: allocate as much as is needed */
-#define MAXPATH 256
 
 struct dbasestrc {
-  char basename[MAXPATH];	// Path and name of the open data base.
+  char basename[PATH_MAX];	// Path and name of the open data base.
   FILE *filvar;			// File handle of data base.
   int nfiles;			// # of files in data base.
   struct filestrc file[];
@@ -76,10 +75,10 @@ static void errf (char *text, int code, ...) {
   return;
 }
 
-char beerconfigfile[MAXPATH] = "0";
-char beerdatafile[MAXPATH] = "0";
+char beerconfigfile[PATH_MAX] = "0";
+char beerdatafile[PATH_MAX] = "0";
 
-const char filenames[2][20] = {
+const char filenames[2][NAME_MAX] = {
   {"lastbeer.bin"},
   {"conf_hs.bin"}
 };
@@ -115,7 +114,7 @@ char *findbeerfile (enum beerfile file_entry) {
     if (strcmp (beerdatafile, "0") != 0)
       return beerdatafile;
     const char *datafilename = filename;
-    char fulldatapath[MAXPATH];
+    char fulldatapath[PATH_MAX];
     // [1] look in DATADIR/PACKAGENAME:
     sprintf (fulldatapath, "%s/%s/%s", DATADIR, PACKAGE_NAME, datafilename);
     if (access (fulldatapath, R_OK) == 0) {
@@ -135,8 +134,8 @@ char *findbeerfile (enum beerfile file_entry) {
     if (strcmp (beerconfigfile, "0") != 0)
       return beerconfigfile;
     const char *conffilename = filename;
-    char confdir[MAXPATH];	// directory
-    char fullconfpath[MAXPATH];	// the actual file
+    char confdir[PATH_MAX];	// directory
+    char fullconfpath[PATH_MAX];	// the actual file
     //
     // [1] Let's try global (LOCALSTATEDIR - typically, in /var...)
     sprintf (fullconfpath, "%s/%s", LOCALSTATEDIR, conffilename);
