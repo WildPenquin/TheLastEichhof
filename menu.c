@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <linux/limits.h>
 
 #define MENUX           142	// X-offset for first menupoint
 #define MENUY           58	// Y-offset for first menupoint
@@ -39,16 +40,39 @@
 #define LOCALSTATEDIR "."
 #endif
 
+#define CFG_REVISION PACKAGE_NAME"20w______" // Change if configuration structure changes!
+
+// TODO: use something like json for config instead of binary file...
+// TODO: separate config and highscore file?
 void loadconfig (void) {
   int filvar;
   int sound;
+  int cfg_panxplosion;
+  int cfg_panfoesound;
+  char configidstring[] = CFG_REVISION;
+  char configid_read[sizeof(configidstring)];
 
   char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
-  printf ("Opening conf file %s\n", fullpath);
+  printf ("Opening conf file %s ...", fullpath);
 
-  /* Look for installed high score file; failing that, look in current
-     directory. */
-  if ((filvar = open (fullpath, O_RDONLY | O_BINARY, S_IREAD)) == -1) {
+  if ((filvar = open (fullpath, O_RDONLY | O_BINARY, S_IREAD)) != -1) {
+    read (filvar, &configid_read, sizeof(configidstring)); // Some protection for changed configuration file! 
+    if ( strcmp(configid_read, configidstring) != 0 ) { // old config file!
+      // BACK UP OLD FILE!
+      printf("Incompatible config file revision.\n Backing up and resetting config\n");
+      strcpy(configid_read, "INVALID");
+      char configbackup[PATH_MAX];
+      strcpy(configbackup, fullpath);
+      strcat(configbackup, ".bak");
+      close(filvar);
+      if ( rename(fullpath, configbackup) != 0 ) {
+        printf("Renaming config from %s to %s failed with %s", fullpath, configbackup, strerror(errno));
+      };
+    }
+  } else strcpy(configid_read, "INVALID");
+
+  // If no config loaded, set up default keys
+  if ( strcmp(configid_read, "INVALID") == 0 ) {
     key_up = KEY_UP;
     key_down = KEY_DOWN;
     key_left = KEY_LEFT;
@@ -58,6 +82,8 @@ void loadconfig (void) {
     return;
   }
 
+  printf("success (revision %s)\n", configid_read, configidstring);
+
   /* FIXME: Don't assume that a short int is 2 bytes and little-endian. */
   read (filvar, &key_up, sizeof (short));
   read (filvar, &key_down, sizeof (short));
@@ -65,8 +91,12 @@ void loadconfig (void) {
   read (filvar, &key_right, sizeof (short));
   read (filvar, &key_fire, sizeof (short));
   read (filvar, &key_pause, sizeof (short));
-  read (filvar, &sound, sizeof (short));
+  read (filvar, &sound, sizeof (int));
+  read (filvar, &cfg_panxplosion, sizeof (int));
+  read (filvar, &cfg_panfoesound, sizeof (int));
   speaker (sound);
+  panxplosion(cfg_panxplosion);
+  panfoesound(cfg_panfoesound);
   loadhighscore (&filvar);
   close (filvar);
 }
@@ -74,6 +104,9 @@ void loadconfig (void) {
 void saveconfig (void) {
   int filvar;
   int sound;
+  int cfg_panxplosion;
+  int cfg_panfoesound;
+  char configidstring[] = CFG_REVISION;
 
   char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
 
@@ -83,6 +116,7 @@ void saveconfig (void) {
 		      S_IRUSR | S_IWUSR)) == -1)
     return;
 
+  write (filvar, &configidstring, sizeof(configidstring));
   write (filvar, &key_up, sizeof (short));
   write (filvar, &key_down, sizeof (short));
   write (filvar, &key_left, sizeof (short));
@@ -90,7 +124,11 @@ void saveconfig (void) {
   write (filvar, &key_fire, sizeof (short));
   write (filvar, &key_pause, sizeof (short));
   sound = speaker (-1);
-  write (filvar, &sound, sizeof (short));
+  write (filvar, &sound, sizeof (int));
+  cfg_panxplosion = panxplosion (-1);
+  write (filvar, &cfg_panxplosion, sizeof (int));
+  cfg_panfoesound = panfoesound (-1);
+  write (filvar, &cfg_panfoesound, sizeof (int));
   savehighscore (&filvar);
   close (filvar);
 }
