@@ -40,7 +40,7 @@
 #define LOCALSTATEDIR "."
 #endif
 
-#define CFG_REVISION PACKAGE_NAME"20w____b_" // Change if configuration structure changes!
+#define CFG_REVISION PACKAGE_NAME"20w______" // Change if configuration structure changes!
 
 // TODO: use something like json for config instead of binary file...
 // TODO: separate config and highscore file?
