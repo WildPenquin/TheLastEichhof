@@ -1,4 +1,5 @@
 CONFIG.HIG
+conf_hs.bin
 
 # autotool droppings
 .deps/
