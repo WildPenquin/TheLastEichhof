@@ -2,9 +2,9 @@
 #include "sound.h"
 #include <stdio.h>
 
-bool soundon = 1;
-bool sound_panxplosion = 1;
-bool sound_panfoesound = 1;
+bool soundon = true;
+bool sound_panxplosion = true;
+bool sound_panfoesound = true;
 
 
 /*speaker:
