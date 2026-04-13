@@ -2,9 +2,9 @@
 #include "sound.h"
 #include <stdio.h>
 
-int soundon = 1;
-int sound_panxplosion = 1;
-int sound_panfoesound = 1;
+bool soundon = 1;
+bool sound_panxplosion = 1;
+bool sound_panfoesound = 1;
 
 
 /*speaker:
@@ -12,11 +12,11 @@ int sound_panfoesound = 1;
    state == 1  : Turn sound on.
    state == -1 : Query sound. */
 
-int speaker (int state) {
+bool speaker (int state) {
   if (state == -1)
     return soundon;
 
-  soundon = state;
+  soundon = state ? true : false;
   if (!soundon)
     remove_sound ();
   return soundon;
@@ -27,19 +27,19 @@ int speaker (int state) {
  * state == 1   : Turn to stereo (panning according to location)
  * state == -1  : Query state */
 
-int panxplosion (int state) {
+bool panxplosion (int state) {
   if (state == -1)
     return sound_panxplosion;
 
-  sound_panxplosion = state;
+  sound_panxplosion = state ? true : false;
   return sound_panxplosion;
 }
 
-int panfoesound (int state) {
+bool panfoesound (int state) {
   if (state == -1)
     return sound_panfoesound;
 
-  sound_panfoesound = state;
+  sound_panfoesound = state ? true : false;
   return sound_panfoesound;
 }
 

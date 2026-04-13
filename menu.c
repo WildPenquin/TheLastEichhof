@@ -40,15 +40,15 @@
 #define LOCALSTATEDIR "."
 #endif
 
-#define CFG_REVISION PACKAGE_NAME"20w______" // Change if configuration structure changes!
+#define CFG_REVISION PACKAGE_NAME"20w____b_" // Change if configuration structure changes!
 
 // TODO: use something like json for config instead of binary file...
 // TODO: separate config and highscore file?
 void loadconfig (void) {
   int filvar;
-  int sound;
-  int cfg_panxplosion;
-  int cfg_panfoesound;
+  bool sound;
+  bool cfg_panxplosion;
+  bool cfg_panfoesound;
   char configidstring[] = CFG_REVISION;
   char configid_read[sizeof(configidstring)];
 
@@ -91,9 +91,9 @@ void loadconfig (void) {
   read (filvar, &key_right, sizeof (short));
   read (filvar, &key_fire, sizeof (short));
   read (filvar, &key_pause, sizeof (short));
-  read (filvar, &sound, sizeof (int));
-  read (filvar, &cfg_panxplosion, sizeof (int));
-  read (filvar, &cfg_panfoesound, sizeof (int));
+  read (filvar, &sound, sizeof (sound));
+  read (filvar, &cfg_panxplosion, sizeof (cfg_panxplosion));
+  read (filvar, &cfg_panfoesound, sizeof (cfg_panfoesound));
   speaker (sound);
   panxplosion(cfg_panxplosion);
   panfoesound(cfg_panfoesound);
@@ -103,9 +103,9 @@ void loadconfig (void) {
 
 void saveconfig (void) {
   int filvar;
-  int sound;
-  int cfg_panxplosion;
-  int cfg_panfoesound;
+  bool sound;
+  bool cfg_panxplosion;
+  bool cfg_panfoesound;
   char configidstring[] = CFG_REVISION;
 
   char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
@@ -124,11 +124,11 @@ void saveconfig (void) {
   write (filvar, &key_fire, sizeof (short));
   write (filvar, &key_pause, sizeof (short));
   sound = speaker (-1);
-  write (filvar, &sound, sizeof (int));
+  write (filvar, &sound, sizeof (sound));
   cfg_panxplosion = panxplosion (-1);
-  write (filvar, &cfg_panxplosion, sizeof (int));
+  write (filvar, &cfg_panxplosion, sizeof (cfg_panxplosion));
   cfg_panfoesound = panfoesound (-1);
-  write (filvar, &cfg_panfoesound, sizeof (int));
+  write (filvar, &cfg_panfoesound, sizeof (cfg_panfoesound));
   savehighscore (&filvar);
   close (filvar);
 }
