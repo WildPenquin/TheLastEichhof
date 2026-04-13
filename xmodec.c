@@ -584,6 +584,20 @@ void clearscreen (void) {
 
 void clearregion (int y, int n) {
 
+  // int p, x, yp;
+  uintptr_t write_address;
+  for (int p = 0; p <= 1; p++) {
+    // get y
+    for (int yp = y; yp < y+n; yp++) {
+      // clear all X
+      for (int x = 0; x < 320 ; x++) {
+        write_address = bmp_write_line (full_pages[p], yp);
+        // clears pixel
+        bmp_write8 (write_address + x, backgrndcolor);
+      }
+    }
+  }
+
 #if 0
   selectplane (0x0f);
   selectmask (0xff);
