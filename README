@@ -8,9 +8,12 @@ This repo is forked from loonycyborg's repo and minor fixes by WildPenguin 2026.
 
 INSTALLATION
 
-On a Unix-like system, run ./configure followed by make install.  If you want
-the high score and settings file to be modifiable, set it with the appropriate
-permissions.  By default, it is installed as /usr/local/var/CONFIG.HIG.
+On a Unix-like system, run ./configure followed by make install.High score and
+config will be put in user home directory (according to XDG_CONFIG_HOME or 
+HOME variables, most probably in $HOME/.config/lastbeer).
+
+If you want a global configuration and high score file, comment out the relevant
+line in Makefile.am.
 
 You need Allegro 4, on Debian derivatives it comes as liballegro4-dev.
 
@@ -161,9 +164,13 @@ Changes:
 
 2.0w - a fork from loonycyborg's fork with minor fixes by WildPenguin:
     - Sound is not clipping when multiple sound effects play at the same time
+      (clipping may still occur on some setups; I'm not familiar with Allegro)
     - Sound is panning according to enemy location (toggleable in the menu)
     - BEER.DAT restored from original DOS version (HS soing had a minor glitch)
     - Some output to STDOUT to facilitate autosplitting / speedrunning
+    - some file handling fixes (more standard, packageable and easier to make
+      portable)
+    - files renamed to not be IN CAPITALS LIKE DOSLIKE.DAT IN 1993
 
 =============================================================================
 WEB LINKS
