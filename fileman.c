@@ -6,12 +6,14 @@
 /*               written by Dany Schoch                  */
 /*                                                       */
 /*   Revision List:                                      */
-/*	27. May 93: Memory peak meter added.	 	 */
-/*      28.       : >64kB file load error corrected.     */
-/*	30. June  : 'shutfilemanager' crash corrected.   */
-/*	22. Sept  : 'openfile' added.			 */
-/*	30. Nov	  : 'errno.h' error compatibility added. */
-/*      19. Dez   : 'printbuffer' added.                 */
+/*	27. May 93: Memory peak meter added.	 	         */
+/*      28.   : >64kB file load error corrected.         */
+/*	30. June  : 'shutfilemanager' crash corrected.       */
+/*	22. Sept  : 'openfile' added.			             */
+/*	30. Nov	  : 'errno.h' error compatibility added.     */
+/*  19. Dez   : 'printbuffer' added.                     */
+/*  Apr 2026  : 'findbeerfile', 'fivebeerfilename'       */
+/*                  added, use linux/limits.h            */
 
 
 #include <string.h>
