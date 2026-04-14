@@ -73,6 +73,7 @@ void loadconfig (void) {
 
   // If no config loaded, set up default keys
   if ( strcmp(configid_read, "INVALID") == 0 ) {
+    printf("no usable config found, reset.\n");
     key_up = KEY_UP;
     key_down = KEY_DOWN;
     key_left = KEY_LEFT;
@@ -667,6 +668,8 @@ void menu (void) {
   c = 0;
   do {
     clear_keybuf ();
+    if (key[KEY_ALT] && key[KEY_ENTER])
+        toggle_fullscreen ();
     while (!keypressed ()) {
       c = cyclepalette (232, 254, c);
       waitfortick ();
