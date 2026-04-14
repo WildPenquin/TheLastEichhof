@@ -155,7 +155,7 @@ unsigned long getspritesize (int sprite);
 unsigned long getobjectsize (int object);
 unsigned long getobjectpos (int object);
 
-#define DISPLAY_SCALE 2
+#define DISPLAY_SCALE 1
 
 void toggle_fullscreen (void);
 void setxmode (void);

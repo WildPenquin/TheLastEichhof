@@ -138,10 +138,11 @@ void cmdline (int argc, char *argv[]) {
   strupr (cmd);
 
 // Help?
-  if (strstr (cmd, "/?") || strstr (cmd, "-?")) {	// Help?
+  if (strstr (cmd, "/?") || strstr (cmd, "-?") || strstr(cmd, "-h") ) {	// Help?
     printf ("Syntax:   BALLER [options]\n");
     printf ("  /vga    Override VGA detection.\n");
     printf ("  /ns     Play without sound.\n");
+    printf ("  /sX     Set window scale to X\n");
     printf ("\n");
     printf
       ("To force SoundBlaster on, use the BLASTER environment variable.\n");
@@ -196,6 +197,17 @@ int main (int argc, char *argv[]) {
   if (strstr (cmd, "/NS") || strstr (cmd, "-NS"))
     speaker (0);
 
+  if ( char *scale = strstr(cmd, "/S") ) {
+    int scaleto = atoi(&scale[2]);
+    if (scaleto > 0 && scaleto < 6) {
+        printf("Set window scale to %i\n", scaleto);
+        win_scalefactor=scaleto;
+    } else{
+      printf("Invalid scale parameter\n");
+    }
+  } else {
+    printf("No scale\n");
+  }
 // Open date bases.
   initfilemanager (40, 512, 8192, error);
   datapool = opendatabase (findbeerfile (BEER_DATAFILE));

@@ -15,6 +15,9 @@
 #include "xmode.h"
 #include "baller.h"
 
+int win_scalefactor = 1;
+// int full_scalefactor
+
 extern volatile int subtick;
 
 int run_in_fullscreen = 0;
@@ -28,9 +31,10 @@ void toggle_fullscreen (void) {
 void setxmode (void) {
   set_color_depth (8);
   request_refresh_rate (60);
+  int scalefactor = run_in_fullscreen ? 1 : win_scalefactor;
   set_gfx_mode (run_in_fullscreen ? GFX_AUTODETECT_FULLSCREEN
 		: GFX_AUTODETECT_WINDOWED,
-		DISPLAY_SCALE * 320, DISPLAY_SCALE * 240, 0, 0);
+		scalefactor * 320, scalefactor * 240, 0, 0);
 }
 
 #if 0
