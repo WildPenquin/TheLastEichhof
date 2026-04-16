@@ -15,8 +15,9 @@
 #define BYTESPERLINE		80
 #define SCREENSIZE		28000
 
+BITMAP *bmp;
+
 static int loadEGA (char *file) {
-  BITMAP *bmp;
 
   unsigned char *data;
   int dataptr;
@@ -95,8 +96,11 @@ static int loadEGA (char *file) {
     }
   }
 
-  blit (bmp, screen, 0, 0, 0, 0, bmp->w, bmp->h);
-  destroy_bitmap (bmp);
+  // if scale = 1 use regular blit:
+  // blit (bmp, screen, 0, 0, 0, 0, bmp->w, bmp->h);
+  stretch_blit(bmp, screen, 0, 0, bmp -> w, bmp -> h,
+      0, 0, SCREEN_W, SCREEN_H);
+  // destroy_bitmap (bmp);
   unloadfile (data);
 
   return 0;
@@ -119,15 +123,20 @@ static void putpaper (int c, int s, char *paper) {
 
     for (col = 7; col >= 0; col--) {
       int pixel = (*data & (1 << col)) >> col;	/* 0 or 1 */
-      putpixel (screen, 632 + (7 - col), 310 + i, pixel * 15);
+      // putpixel (screen, 632 + (7 - col), 310 + i, pixel * 15);
+      putpixel (bmp, 632 + (7 - col), 310 + i, pixel * 15);
     }
     data++;
   }
 }
 
-static void paperscroll (void) {
+static void paperscroll () {
   /* Move left eight pixels. */
-  blit (screen, screen, 8, 310, 0, 310, screen->w - 8, 40);
+  // blit (screen, screen, 8, 310, 0, 310, screen->w - 8, 40);
+  blit(bmp, bmp, 8, 310, 0, 310, bmp->w-8, 40);
+  // inefficient:
+  // stretch_blit(bmp, screen, 0, 0, bmp->w, bmp->h, 0, 0, SCREEN_W, SCREEN_H);
+  stretch_blit(bmp, screen, 0, 310, bmp->w-8, 40, 0, 310*introscale, SCREEN_W-8*introscale, 40*introscale);
 }
 
 
@@ -139,7 +148,11 @@ void intro (void) {
   SAMPLE *s;
 
   // Switch to 640x350 mode.
-  set_gfx_mode (GFX_AUTODETECT_WINDOWED, 640, 350, 0, 0);
+  // Use an "ugly" scalefactor based on Y and 240
+  // float introscale = 1 + ( win_scalefactor - 1 ) * 240/350;
+  introscale = win_scalefactor * 240 > 350 ? win_scalefactor * 240 / 350 : 1;
+  printf("Intro would be in %f x %f\n", introscale * 640, introscale * 350);
+  set_gfx_mode (GFX_AUTODETECT_WINDOWED, introscale * 640, introscale * 350, 0, 0);
 
   // Initialize sound (volume)
   haltsound ();

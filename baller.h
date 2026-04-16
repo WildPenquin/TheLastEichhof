@@ -10,6 +10,7 @@
 
 float win_scalefactor;
 float full_scalefactor;
+float introscale;
 
 // Several position equates.
 

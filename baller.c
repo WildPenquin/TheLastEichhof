@@ -197,8 +197,9 @@ int main (int argc, char *argv[]) {
   if (strstr (cmd, "/NS") || strstr (cmd, "-NS"))
     speaker (0);
 
+  float scaleto;
   if ( char *scale = strstr(cmd, "/S") ) {
-    float scaleto = atof(&scale[2]);
+    scaleto = atof(&scale[2]);
     if (scaleto > 0 && scaleto < 7) {
         printf("Set scale to %f\n", scaleto);
         win_scalefactor=full_scalefactor=scaleto;
@@ -208,6 +209,20 @@ int main (int argc, char *argv[]) {
   } else {
     printf("No scale\n");
   }
+
+  if ( char *scale = strstr(cmd, "/IS") ) {
+    scaleto = atof(&scale[3]);
+    if (scaleto > 0 && scaleto < 7) {
+        printf("Set introscale to %f\n", scaleto);
+        introscale=scaleto;
+    } else{
+      printf("Invalid scale parameter\n");
+    }
+  } else {
+    printf("No scale\n");
+  }
+
+
 // Open date bases.
   initfilemanager (40, 512, 8192, error);
   datapool = opendatabase (findbeerfile (BEER_DATAFILE));
