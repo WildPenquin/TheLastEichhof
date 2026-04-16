@@ -40,7 +40,7 @@
 #define LOCALSTATEDIR "."
 #endif
 
-#define CFG_REVISION PACKAGE_NAME"20w______" // Change if configuration structure changes!
+#define CFG_REVISION PACKAGE_NAME"20wf_____" // Change if configuration structure changes!
 
 // TODO: use something like json for config instead of binary file...
 // TODO: separate config and highscore file?
@@ -51,6 +51,8 @@ void loadconfig (void) {
   bool cfg_panfoesound;
   char configidstring[] = CFG_REVISION;
   char configid_read[sizeof(configidstring)];
+  float cfg_fullscalefactor = full_scalefactor;
+  float cfg_winscalefactor = win_scalefactor;
 
   char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
   printf ("Opening conf file %s ...", fullpath);
@@ -95,6 +97,10 @@ void loadconfig (void) {
   read (filvar, &sound, sizeof (sound));
   read (filvar, &cfg_panxplosion, sizeof (cfg_panxplosion));
   read (filvar, &cfg_panfoesound, sizeof (cfg_panfoesound));
+  read (filvar, &cfg_winscalefactor, sizeof (cfg_winscalefactor));
+  read (filvar, &cfg_fullscalefactor, sizeof (cfg_fullscalefactor));
+  full_scalefactor=cfg_fullscalefactor;
+  win_scalefactor = cfg_winscalefactor;
   speaker (sound);
   panxplosion(cfg_panxplosion);
   panfoesound(cfg_panfoesound);
@@ -107,6 +113,8 @@ void saveconfig (void) {
   bool sound;
   bool cfg_panxplosion;
   bool cfg_panfoesound;
+  float cfg_fullscalefactor = full_scalefactor;
+  float cfg_winscalefactor = win_scalefactor;
   char configidstring[] = CFG_REVISION;
 
   char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
@@ -130,6 +138,8 @@ void saveconfig (void) {
   write (filvar, &cfg_panxplosion, sizeof (cfg_panxplosion));
   cfg_panfoesound = panfoesound (-1);
   write (filvar, &cfg_panfoesound, sizeof (cfg_panfoesound));
+  write (filvar, &cfg_winscalefactor, sizeof (cfg_winscalefactor));
+  write (filvar, &cfg_fullscalefactor, sizeof (cfg_fullscalefactor));
   savehighscore (&filvar);
   close (filvar);
 }

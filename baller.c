@@ -198,10 +198,10 @@ int main (int argc, char *argv[]) {
     speaker (0);
 
   if ( char *scale = strstr(cmd, "/S") ) {
-    int scaleto = atoi(&scale[2]);
-    if (scaleto > 0 && scaleto < 6) {
-        printf("Set window scale to %i\n", scaleto);
-        win_scalefactor=scaleto;
+    float scaleto = atof(&scale[2]);
+    if (scaleto > 0 && scaleto < 7) {
+        printf("Set scale to %f\n", scaleto);
+        win_scalefactor=full_scalefactor=scaleto;
     } else{
       printf("Invalid scale parameter\n");
     }

@@ -8,7 +8,8 @@
 #define RESOLUTION  4
 #define LEVELS			5	// Number of levels in game.
 
-int win_scalefactor;
+float win_scalefactor;
+float full_scalefactor;
 
 // Several position equates.
 
