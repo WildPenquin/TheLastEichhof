@@ -17,6 +17,37 @@ line in Makefile.am.
 
 You need Allegro 4, on Debian derivatives it comes as liballegro4-dev.
 
+KNOWN ISSUES
+
+This game uses Allegro 4. That library is ancient and unmaintained (Allegro5 is 
+active).
+
+Especially when playing on Wayland, fullscreen doesn't work properly. The game
+has trouble registering keystrokes (no problems under X.Org). Fullscreen will
+also be stretched on non 4:3, as the game (currently) just takes whatever 
+Allegro4 thinks is the best resolution.
+
+Workarounds:
+- start with /SX to scale the game window. You can then yse your window manager 
+  to get the window borderless (and effectively fullscreen) or just play
+  in a larger window according to your preference.
+- The intro screen scale can be set with /ISX.
+- You can use float values for scaling (albeit integers will look best)
+- Use gamescope. Something like `-S integer -F pixel` get the results I like
+  most, but you might prefer something else. There may be slight graphical
+  slowdowns with gamescope (like the price decrement in the shop). Set in-game
+  scale to 1 if you use Gamescope as it will do it's own scaling!
+
+TODO: Instead set a fullscreen resolution, it's much more user friendly. Ask the 
+user for a windows size. As ffor Intro, don't resize but fit the intro into the
+desired game window.
+
+TODO: Port to Allegro 5 =)
+
+The game uses 320 x 240 (scales nicely to 640 x 480) but the intro uses 
+640 x 350. These are both old VGA/EGA resolutions. 640 x 350 probably didn't
+have a square PAR originally.
+
 COPYING
 
 Original source code for MS-DOS released by Dany Schoch under the following
