@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 #include "xmode.h"
 #include "fileman.h"
@@ -524,10 +525,26 @@ void playthegame (void) {
   int feedback;
 
   newgame ();
+  struct timespec begin;
+  struct timespec last;
+  struct timespec current;
+  struct timespec finish;
+
+  clock_gettime(CLOCK_REALTIME, &current);
 
   do {
     initlevel (stage);
-    printf ("STARTED: level %i \n", stage);
+    last = current;
+    clock_gettime(CLOCK_REALTIME, &current);
+    if ( stage == 0 )  { begin = current;
+      printf("STARTED: level %i\n");
+    } else {
+      printf ("STARTED: level %i, laptime %i:%i \n", stage, 
+        current.tv_sec-last.tv_sec - 
+          ( (current.tv_nsec - last.tv_nsec) < 0 ? 1 : 0 ),
+        current.tv_nsec/1000000-last.tv_nsec/1000000 + 
+          ( (current.tv_nsec - last.tv_nsec) < 0 ? 1000 : 0 ) );
+    }
     setplayposition (level.nattacks, level.attack, level.descript->nbigboss);
 
     do {
@@ -539,7 +556,26 @@ void playthegame (void) {
     } while (!feedback && (lifes > 0));
     if (!(cheatlevel & CHEATLIFES))
       lifes++;
-    if (feedback) printf ("ENDED: level %i \n", stage);
+    last = current;
+    clock_gettime(CLOCK_REALTIME, &current);
+    if (feedback) { printf ("ENDED: level %i, laptime %i:%i \n", stage, 
+        current.tv_sec-last.tv_sec - 
+          ( (current.tv_nsec - last.tv_nsec) < 0 ? 1 : 0 ),
+        current.tv_nsec/1000000-last.tv_nsec/1000000 + 
+          ( (current.tv_nsec - last.tv_nsec) < 0 ? 1000 : 0 ) );
+        if ( stage == 5 ) { 
+          finish = current;
+          int mseconds = begin.tv_nsec/1000000-last.tv_nsec/1000000;
+          int seconds = (begin.tv_sec-finish.tv_sec)%60;
+          // conditionally (if msecond. diff < 0)
+          seconds -= mseconds < 0 ? 1 : 0;    //-1 second
+          mseconds += mseconds < 0 ? 1000 :0;   //+1000 milliseconds
+          printf("TOTAL TIME: %i:%i.%i  (mm:ss.mso)\n",
+            (begin.tv_sec-finish.tv_sec)/60,
+            seconds,
+            mseconds);
+        }
+    }
     shutlevel ();
     stage++;
     if (!feedback || (stage == LEVELS))
