@@ -96,68 +96,55 @@ SAMPLE *create_SAMPLE (struct sndstrc *s) {
   sample->data = s->data;
 
   /* This is something called 8 to 4 bit ADPCM */
-  /* Decoding algorithm taken from
-     /* http://wiki.multimedia.cx/index.php?title=Creative_8_bits_ADPCM */
+  /* Decoding algorithm taken from */
+  /* http://wiki.multimedia.cx/index.php?title=Creative_8_bits_ADPCM */
+  /* UPDATED to adapt information from Dosbox Staging source -> */
+  /* https://github.com/dosbox-staging/dosbox-staging/blob/main/src/hardware/audio/soundblaster.cpp */
   if (s->flags & SND_PACKED4) {
     unsigned char *new_sample = malloc (1 + 2 * (sample->len - 1));
     int byte;
     unsigned char value;
     int i;
 
-    int step, shift, limit, sign;
-    step = 0;
-    shift = 0;
-    limit = 5;
+    int step = 0; //, shift; //  limit , sign;
 
     byte = s->data[0];
     new_sample[0] = byte;
 
+    const signed char sndsb_adpcm_4bit_scalemap[64] = {
+        0,  1,  2,  3,  4,  5,  6,  7,  0,  -1,  -2,  -3,  -4,  -5,  -6,  -7,
+        1,  3,  5,  7,  9, 11, 13, 15, -1,  -3,  -5,  -7,  -9, -11, -13, -15,
+        2,  6, 10, 14, 18, 22, 26, 30, -2,  -6, -10, -14, -18, -22, -26, -30,
+        4, 12, 20, 28, 36, 44, 52, 60, -4, -12, -20, -28, -36, -44, -52, -60
+    };
+
+    const signed char sndsb_adpcm_4bit_adjustmap[64] = {
+          0, 0, 0, 0, 0, 16, 16, 16,
+          0, 0, 0, 0, 0, 16, 16, 16,
+        240, 0, 0, 0, 0, 16, 16, 16,
+        240, 0, 0, 0, 0, 16, 16, 16,
+        240, 0, 0, 0, 0, 16, 16, 16,
+        240, 0, 0, 0, 0, 16, 16, 16,
+        240, 0, 0, 0, 0,  0,  0,  0,
+        240, 0, 0, 0, 0,  0,  0,  0
+    };
+
     for (i = 1; i < sample->len; i++) {
-      value = (s->data[i] & 0xf0) >> 4;
-
-      sign = (value & 0x08) ? -1 : 1;	/* Test bit 3 */
-      value &= 0x07;		/* Clear bit 3 */
-
-      byte += sign * (value << (step + shift));
-      if (byte > 0xff)
-	byte = 0xff;
-      if (byte < 0x00)
-	byte = 0x00;
-
-      new_sample[2 * i] = byte;
-
-      if (value >= limit)
-	step++;
-      else if (value == 0)
-	step--;
-      if (step > 3)
-	step = 3;
-      if (step < 0)
-	step = 0;
-
-	/*********************************************/
-
-      /* Exactly the same, but for the second nybble */
-      value = (s->data[i] & 0x0f);
-
-      sign = (value & 0x08) ? -1 : 1;	/* Test bit 3 */
-      value &= 0x07;		/* Clear bit 3 */
-
-      byte += sign * (value << (step + shift));
-      if (byte > 0xff)
-	byte = 0xff;
-      if (byte < 0x00)
-	byte = 0x00;
-      new_sample[2 * i + 1] = byte;
-
-      if (value >= limit)
-	step++;
-      else if (value == 0)
-	step--;
-      if (step > 3)
-	step = 3;
-      if (step < 0)
-	step = 0;
+      for ( int j = 0; j <= 1 ; j++ ) {
+        // higher or lower 4 bits
+        value = j > 0 ? s->data[i] & 0x0f : ( s->data[i] ) >> 4;
+        int map_i = value + step;
+        // clamp to max_i = 63 (len-1)
+        map_i = map_i < 0 ? 0 : map_i > 63 ? 63 : map_i;
+        step = ( step + sndsb_adpcm_4bit_adjustmap[map_i]) & 0xff; // why this and? drop >8 bits?
+        byte = ( byte + sndsb_adpcm_4bit_scalemap[map_i] );
+        // clamp to 0 ... 255
+        if (byte > 0xff)
+            byte = 0xff;
+        if (byte < 0x00)
+            byte = 0x00;
+        new_sample[2*i + j] = byte;
+      }
     }
 
     sample->data = new_sample;
