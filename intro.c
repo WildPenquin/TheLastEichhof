@@ -17,7 +17,7 @@
 #define SCREENSIZE		28000
 
 BITMAP *bmp;
-BITMAP *introvignette;
+// BITMAP *introvignette;
 int xoutsize, xoffset;
 int introYres, introXres; // fullscreen or window
 
@@ -211,6 +211,7 @@ void intro (void) {
 
   unloadfile (paper);
   clearscreen();
+  destroy_bitmap(bmp);
 
 
 // All this mode switching is a little bit a 'murks'. I know.
