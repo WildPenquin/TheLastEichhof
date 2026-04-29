@@ -698,7 +698,12 @@ void menu (void) {
       selected = initmenu (&snd, &pointobj, &pointspr, &menuspr);
     }
     if (key[KEY_3] || (selected == 3 && key[key_fire])) {	// Show Title
-      endmenu (snd, pointobj, pointspr, menuspr);
+      if (key[KEY_RSHIFT] || key[KEY_LSHIFT] ) {
+        glowout();
+        clearscreen();
+        endmenu (snd, pointobj, pointspr, menuspr);
+        intro();
+      }
       showtitle ();
       selected = initmenu (&snd, &pointobj, &pointspr, &menuspr);
     }
