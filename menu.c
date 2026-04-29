@@ -31,6 +31,7 @@
 #include "sound.h"
 #include "fileman.h"
 #include "baller.h"
+#include "beerconfig.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -40,25 +41,27 @@
 #define LOCALSTATEDIR "."
 #endif
 
-#define CFG_REVISION PACKAGE_NAME"20wf_____" // Change if configuration structure changes!
+#define CFG_REVISION PACKAGE_NAME"20wr_____" // Change if configuration structure changes!
+
+
 
 // TODO: use something like json for config instead of binary file...
 // TODO: separate config and highscore file?
 void loadconfig (void) {
-  int filvar;
-  bool sound;
-  bool cfg_panxplosion;
-  bool cfg_panfoesound;
   char configidstring[] = CFG_REVISION;
   char configid_read[sizeof(configidstring)];
-  float cfg_fullscalefactor = full_scalefactor;
-  float cfg_winscalefactor = win_scalefactor;
 
   char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
-  printf ("Opening conf file %s ...", fullpath);
+  printf ("Opening conf file %s ...\n", fullpath);
 
-  if ((filvar = open (fullpath, O_RDONLY | O_BINARY, S_IREAD)) != -1) {
-    read (filvar, &configid_read, sizeof(configidstring)); // Some protection for changed configuration file! 
+
+  FILE* cfgfile; 
+  if ( cfgfile = fopen(fullpath, "rb") ) {
+    fgets(configid_read, sizeof(configidstring), cfgfile);
+    /* FIXME: Don't assume that a short int is 2 bytes and little-endian. */
+    /* how does this relate to the struct??? */
+    fread(&eichcfg, sizeof(beerconfig), 1, cfgfile);
+    printf("CFG strings %s and %s \n", configid_read, configidstring );
     if ( strcmp(configid_read, configidstring) != 0 ) { // old config file!
       // BACK UP OLD FILE!
       printf("Incompatible config file revision.\n Backing up and resetting config\n");
@@ -66,82 +69,46 @@ void loadconfig (void) {
       char configbackup[PATH_MAX];
       strcpy(configbackup, fullpath);
       strcat(configbackup, ".bak");
-      close(filvar);
+      fclose(cfgfile);
       if ( rename(fullpath, configbackup) != 0 ) {
         printf("Renaming config from %s to %s failed with %s", fullpath, configbackup, strerror(errno));
       };
     }
   } else strcpy(configid_read, "INVALID");
 
-  // If no config loaded, set up default keys
   if ( strcmp(configid_read, "INVALID") == 0 ) {
     printf("no usable config found, reset.\n");
-    key_up = KEY_UP;
-    key_down = KEY_DOWN;
-    key_left = KEY_LEFT;
-    key_right = KEY_RIGHT;
-    key_fire = KEY_SPACE;
-    key_pause = KEY_P;
-    return;
-  }
+  } else fclose(cfgfile);
 
+  key_up = eichcfg.key_up;
+  key_down = eichcfg.key_down;
+  key_left = eichcfg.key_left;
+  key_right = eichcfg.key_right;
+  key_fire = eichcfg.key_fire;
+  key_pause = eichcfg.key_pause;
+
+  speaker(eichcfg.ss.sound);
+  panxplosion(eichcfg.ss.pan_sfx);
+  panfoesound(eichcfg.ss.pan_foes);
   printf("success (revision %s)\n", configid_read, configidstring);
-
-  /* FIXME: Don't assume that a short int is 2 bytes and little-endian. */
-  read (filvar, &key_up, sizeof (short));
-  read (filvar, &key_down, sizeof (short));
-  read (filvar, &key_left, sizeof (short));
-  read (filvar, &key_right, sizeof (short));
-  read (filvar, &key_fire, sizeof (short));
-  read (filvar, &key_pause, sizeof (short));
-  read (filvar, &sound, sizeof (sound));
-  read (filvar, &cfg_panxplosion, sizeof (cfg_panxplosion));
-  read (filvar, &cfg_panfoesound, sizeof (cfg_panfoesound));
-  read (filvar, &cfg_winscalefactor, sizeof (cfg_winscalefactor));
-  read (filvar, &cfg_fullscalefactor, sizeof (cfg_fullscalefactor));
-  full_scalefactor=cfg_fullscalefactor;
-  win_scalefactor = cfg_winscalefactor;
-  speaker (sound);
-  panxplosion(cfg_panxplosion);
-  panfoesound(cfg_panfoesound);
-  loadhighscore (&filvar);
-  close (filvar);
 }
 
 void saveconfig (void) {
-  int filvar;
   bool sound;
   bool cfg_panxplosion;
   bool cfg_panfoesound;
-  float cfg_fullscalefactor = full_scalefactor;
-  float cfg_winscalefactor = win_scalefactor;
   char configidstring[] = CFG_REVISION;
 
   char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
 
   printf ("Saving config to %s\n", fullpath);
-  if ((filvar = open (fullpath,
-		      O_CREAT | O_WRONLY | O_TRUNC | O_BINARY,
-		      S_IRUSR | S_IWUSR)) == -1)
-    return;
+  FILE* cfgfile; 
+  if ( cfgfile = fopen(fullpath, "wb") ) {
 
-  write (filvar, &configidstring, sizeof(configidstring));
-  write (filvar, &key_up, sizeof (short));
-  write (filvar, &key_down, sizeof (short));
-  write (filvar, &key_left, sizeof (short));
-  write (filvar, &key_right, sizeof (short));
-  write (filvar, &key_fire, sizeof (short));
-  write (filvar, &key_pause, sizeof (short));
-  sound = speaker (-1);
-  write (filvar, &sound, sizeof (sound));
-  cfg_panxplosion = panxplosion (-1);
-  write (filvar, &cfg_panxplosion, sizeof (cfg_panxplosion));
-  cfg_panfoesound = panfoesound (-1);
-  write (filvar, &cfg_panfoesound, sizeof (cfg_panfoesound));
-  write (filvar, &cfg_winscalefactor, sizeof (cfg_winscalefactor));
-  write (filvar, &cfg_fullscalefactor, sizeof (cfg_fullscalefactor));
-  savehighscore (&filvar);
-  close (filvar);
+    fputs(configidstring, cfgfile);
+    fwrite(&eichcfg, sizeof(beerconfig), 1, cfgfile);
+    fclose (cfgfile);
+  }
 }
 
 static void closingtime (void) {
@@ -462,27 +429,27 @@ static void defkeys (struct sprstrc *font1) {
 
 // Left
 
-  key_left = newkey (MENYTEXT - 7, "LEFT", font1);
+  key_left = eichcfg.key_left = newkey (MENYTEXT - 7, "LEFT", font1);
 
 // Right
 
-  key_right = newkey (MENYTEXT + 3, "RIGHT", font1);
+  key_right = eichcfg.key_right = newkey (MENYTEXT + 3, "RIGHT", font1);
 
 // Up
 
-  key_up = newkey (MENYTEXT + 13, "UP", font1);
+  key_up = eichcfg.key_up = newkey (MENYTEXT + 13, "UP", font1);
 
 // Down
 
-  key_down = newkey (MENYTEXT + 23, "DOWN", font1);
+  key_down = eichcfg.key_down = newkey (MENYTEXT + 23, "DOWN", font1);
 
 // Fire
 
-  key_fire = newkey (MENYTEXT + 33, "FIRE", font1);
+  key_fire = eichcfg.key_fire = newkey (MENYTEXT + 33, "FIRE", font1);
 
 // Pause
 
-  key_pause = newkey (MENYTEXT + 43, "PAUSE", font1);
+  key_pause = eichcfg.key_pause = newkey (MENYTEXT + 43, "PAUSE", font1);
 
   showpage (page);
 
@@ -678,8 +645,11 @@ void menu (void) {
   c = 0;
   do {
     clear_keybuf ();
-    if (key[KEY_ALT] && key[KEY_ENTER])
-        toggle_fullscreen ();
+    if (key[KEY_ALT] && key[KEY_ENTER]) {
+      endmenu (snd, pointobj, pointspr, menuspr);
+      toggle_fullscreen ();
+      selected = initmenu (&snd, &pointobj, &pointspr, &menuspr);
+    }
     while (!keypressed ()) {
       c = cyclepalette (232, 254, c);
       waitfortick ();
@@ -698,10 +668,10 @@ void menu (void) {
       selected = initmenu (&snd, &pointobj, &pointspr, &menuspr);
     }
     if (key[KEY_3] || (selected == 3 && key[key_fire])) {	// Show Title
-      if (key[KEY_RSHIFT] || key[KEY_LSHIFT] ) {
         glowout();
         clearscreen();
         endmenu (snd, pointobj, pointspr, menuspr);
+      if (key[KEY_RSHIFT] || key[KEY_LSHIFT] ) {
         intro();
       }
       showtitle ();

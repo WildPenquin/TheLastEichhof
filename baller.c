@@ -23,6 +23,7 @@
 #include "fileman.h"
 #include "sound.h"
 #include "baller.h"
+#include "beerconfig.h"
 
 
 #define MEMORYREQUIRED		500000L	// Memory used to run.
@@ -78,7 +79,6 @@ powerdown : Undoes the effect of powerup.
 	    can't be handled by the function 'error',
 	    because this would call powerdown indirectly.
 ------------------------------------------------------*/
-static void create_pages (void);
 
 void powerup (void) {
   allegro_init ();
@@ -96,6 +96,7 @@ void powerup (void) {
   install_timer ();
   setspeed (GAMESPEED);
 
+  set_window_title("Keppana viimeinen");
   initxmode ();			// Enter graphic mode.
   windowy1 = BARY;		// Game window y-Size.
   create_pages ();
@@ -103,12 +104,56 @@ void powerup (void) {
 
 }
 
-static void create_pages (void) {
-  full_pages[0] = create_system_bitmap (320, 240);
-  full_pages[1] = create_system_bitmap (320, 240);
+void create_pages (void) {
+  bool vignetted = true; // letterboxing check WIP
+  struct resolution_s vignetres;
+  if (eichcfg.res.fullscreen) {
+    vignetres.X = eichcfg.res.full.X;
+    vignetres.Y = eichcfg.res.full.Y;
+  } else {
+    vignetres.X = eichcfg.res.window.X;
+    vignetres.Y = eichcfg.res.window.Y;
+  }
+
+  int GameResX = XMAX+1;
+  int GameResY = YMAX+1; // why exactly +9 and not +1, don't ask me!
+
+  float aspect = (float) vignetres.X/ vignetres.Y;
+  int paddedXres = aspect * GameResY;
+  int paddedYres = GameResX / aspect; 
+  printf("Paddedresvals %i, %i, aspect %f, orif aspect %f \n", paddedXres, paddedYres, aspect, (float) GameResX/GameResY);
+  if ( aspect > (float) GameResX/GameResY ) {
+    printf("Creating vignetted window\n");
+    paddedYres = GameResY;
+  } else if (aspect == (float) GameResX/GameResY) {
+    printf("Creating NON-vignetted window\n");
+  } else {
+    printf("Taller windows not implemented, resetting paddedXres\n");
+    paddedXres = GameResX;
+  }
+
+
+  printf("Paddedresvals when createing are %i, %i, aspect %f\n", paddedXres, paddedYres, aspect);
+  vignet_pages[0] = create_system_bitmap (paddedXres, paddedYres);
+  clear_bitmap(vignet_pages[0]);
+  vignet_pages[1] = create_system_bitmap (paddedXres, paddedYres);
+  clear_bitmap(vignet_pages[1]);
+  full_pages[0] = create_sub_bitmap (vignet_pages[0], (paddedXres - 320) / 2, (paddedYres - paddedYres ) / 2 , GameResX, GameResY);
+  full_pages[1] = create_sub_bitmap (vignet_pages[1], (paddedXres - 320) / 2, (paddedYres - paddedYres ) / 2 , GameResX, GameResY);
 
   pages[0] = create_sub_bitmap (full_pages[0], 0, 0, windowx1, windowy1);
   pages[1] = create_sub_bitmap (full_pages[1], 0, 0, windowx1, windowy1);
+  printf("Pages created - window %i, %i\n", windowx1, windowy1);
+}
+
+void destroy_pages (void) {
+  destroy_bitmap(pages[0]);
+  destroy_bitmap(pages[1]);
+  destroy_bitmap(full_pages[0]);
+  destroy_bitmap(full_pages[1]);
+  destroy_bitmap(vignet_pages[0]);
+  destroy_bitmap(vignet_pages[1]);
+
 }
 
 void powerdown (void) {
@@ -188,45 +233,24 @@ int main (int argc, char *argv[]) {
 // Process command line.
   cmdline (argc, argv);
 
-// Do initialization.
-  powerup ();
+  eichcfg = BeerConfigDefault;
 
 // Load options of last time.
   loadconfig ();
+
+// Do initialization.
+  powerup ();
+
 // Check command line for 'nosound' option.
   if (strstr (cmd, "/NS") || strstr (cmd, "-NS"))
     speaker (0);
-
-  float scaleto;
-  if ( char *scale = strstr(cmd, "/S") ) {
-    scaleto = atof(&scale[2]);
-    if (scaleto > 0 && scaleto < 7) {
-        printf("Set scale to %f\n", scaleto);
-        win_scalefactor=full_scalefactor=scaleto;
-    } else{
-      printf("Invalid scale parameter\n");
-    }
-  } else {
-    printf("No scale\n");
-  }
-
-  if ( char *scale = strstr(cmd, "/IS") ) {
-    scaleto = atof(&scale[3]);
-    if (scaleto > 0 && scaleto < 7) {
-        printf("Set introscale to %f\n", scaleto);
-        introscale=scaleto;
-    } else{
-      printf("Invalid scale parameter\n");
-    }
-  } else {
-    printf("No scale\n");
-  }
 
 
 // Open date bases.
   initfilemanager (40, 512, 8192, error);
   datapool = opendatabase (findbeerfile (BEER_DATAFILE));
 
+  // setxmode();
   intro ();			// Show Blick intro.
 
 

@@ -29,6 +29,7 @@ int windowx1, windowy1;		// Lower right corner.
 
 BITMAP *pages[2];
 BITMAP *full_pages[2];
+BITMAP *vignet_pages[2];
 
 /* Initialize s with the data read from the file.*/
 void create_sprstrc (struct sprstrc **sp, unsigned char *data) {

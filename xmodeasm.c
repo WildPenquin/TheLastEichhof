@@ -14,16 +14,14 @@
 
 #include "xmode.h"
 #include "baller.h"
+#include "beerconfig.h"
 
-float win_scalefactor = 1;
-float full_scalefactor = 1;
+bool truefullscreen = false;
 
 extern volatile int subtick;
 
-int run_in_fullscreen = 0;
-
 void toggle_fullscreen (void) {
-  run_in_fullscreen = !run_in_fullscreen;
+  eichcfg.res.fullscreen = !eichcfg.res.fullscreen;
   setxmode ();
   setstandardpalette ();
 }
@@ -31,10 +29,20 @@ void toggle_fullscreen (void) {
 void setxmode (void) {
   set_color_depth (8);
   request_refresh_rate (60);
-  float scalefactor = run_in_fullscreen ? full_scalefactor : win_scalefactor;
-  set_gfx_mode (run_in_fullscreen ? GFX_AUTODETECT_FULLSCREEN
-		: GFX_AUTODETECT_WINDOWED,
-		scalefactor * 320, scalefactor * 240, 0, 0);
+
+  int allegrogfxmode = eichcfg.res.truefullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED;
+
+  if (eichcfg.res.fullscreen) {
+    set_gfx_mode(allegrogfxmode,
+        eichcfg.res.full.X, eichcfg.res.full.Y,
+        0, 0);
+  } else {
+    set_gfx_mode(allegrogfxmode,
+        eichcfg.res.window.X, eichcfg.res.window.Y,
+        0, 0);
+  }
+  destroy_pages();
+  create_pages();
 }
 
 #if 0
@@ -356,8 +364,8 @@ int outofwindow (int obj) {
 /* Display one of the two pages (p==0 or p==1) */
 void showpage (int p) {
   //show_video_bitmap (pages[p]);
-  stretch_blit (full_pages[p], screen,
-		0, 0, full_pages[p]->w, full_pages[p]->h,
+  stretch_blit (vignet_pages[p], screen,
+		0, 0, vignet_pages[p]->w, vignet_pages[p]->h,
 		0, 0, screen->w, screen->h);
 }
 

@@ -1,11 +1,7 @@
 /* Allegro port Copyright (C) 2014 Gavin Smith. */
 #include "sound.h"
 #include <stdio.h>
-
-bool soundon = true;
-bool sound_panxplosion = true;
-bool sound_panfoesound = true;
-
+#include "beerconfig.h"
 
 /*speaker:
    state == 0  : Turn sound off.
@@ -14,12 +10,12 @@ bool sound_panfoesound = true;
 
 bool speaker (int state) {
   if (state == -1)
-    return soundon;
+    return eichcfg.ss.sound;
 
-  soundon = state ? true : false;
-  if (!soundon)
+  eichcfg.ss.sound = state ? true : false;
+  if (!eichcfg.ss.sound)
     remove_sound ();
-  return soundon;
+  return eichcfg.ss.sound;
 }
 
 /*pan settings for explosions and foe sounds
@@ -29,18 +25,18 @@ bool speaker (int state) {
 
 bool panxplosion (int state) {
   if (state == -1)
-    return sound_panxplosion;
+    return eichcfg.ss.pan_sfx;
 
-  sound_panxplosion = state ? true : false;
-  return sound_panxplosion;
+  eichcfg.ss.pan_sfx = state ? true : false;
+  return eichcfg.ss.pan_sfx;
 }
 
 bool panfoesound (int state) {
   if (state == -1)
-    return sound_panfoesound;
+    return eichcfg.ss.pan_foes;
 
-  sound_panfoesound = state ? true : false;
-  return sound_panfoesound;
+  eichcfg.ss.pan_foes = state ? true : false;
+  return eichcfg.ss.pan_foes;
 }
 
 
@@ -53,7 +49,7 @@ void shutsound (void) {
 /* Stop all playing sounds. */
 void haltsound (void) {
   remove_sound ();
-  if (soundon) {
+  if (eichcfg.ss.sound) {
     reserve_voices (8, 0);
     set_volume_per_voice (3);
     install_sound (DIGI_AUTODETECT, MIDI_NONE, 0);

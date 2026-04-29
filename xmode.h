@@ -258,6 +258,7 @@ extern unsigned base;
 extern unsigned page;
 extern BITMAP *pages[2];
 extern BITMAP *full_pages[2];
+extern BITMAP *vignet_pages[2];
 
 
 extern int objflashcolor;	// Object flashes in white first.

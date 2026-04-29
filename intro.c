@@ -8,6 +8,7 @@
 #include "sound.h"
 #include "fileman.h"
 #include "baller.h"
+#include "beerconfig.h"
 
 
 #define SCROLLY			311
@@ -16,6 +17,9 @@
 #define SCREENSIZE		28000
 
 BITMAP *bmp;
+BITMAP *introvignette;
+int xoutsize, xoffset;
+int introYres, introXres; // fullscreen or window
 
 static int loadEGA (char *file) {
 
@@ -96,11 +100,8 @@ static int loadEGA (char *file) {
     }
   }
 
-  // if scale = 1 use regular blit:
-  // blit (bmp, screen, 0, 0, 0, 0, bmp->w, bmp->h);
   stretch_blit(bmp, screen, 0, 0, bmp -> w, bmp -> h,
-      0, 0, SCREEN_W, SCREEN_H);
-  // destroy_bitmap (bmp);
+      xoffset, 0, xoutsize, SCREEN_H);
   unloadfile (data);
 
   return 0;
@@ -132,11 +133,8 @@ static void putpaper (int c, int s, char *paper) {
 
 static void paperscroll () {
   /* Move left eight pixels. */
-  // blit (screen, screen, 8, 310, 0, 310, screen->w - 8, 40);
   blit(bmp, bmp, 8, 310, 0, 310, bmp->w-8, 40);
-  // inefficient:
-  // stretch_blit(bmp, screen, 0, 0, bmp->w, bmp->h, 0, 0, SCREEN_W, SCREEN_H);
-  stretch_blit(bmp, screen, 0, 310, bmp->w-8, 40, 0, 310*introscale, SCREEN_W-8*introscale, 40*introscale);
+  stretch_blit(bmp, screen, 0, 310, bmp->w-8, 40, xoffset, 0 + 310*introYres/350, xoutsize-8*xoutsize/640, 40*introYres/350);
 }
 
 
@@ -147,17 +145,29 @@ void intro (void) {
   void *ptr;
   SAMPLE *s;
 
-  // Switch to 640x350 mode.
-  // Use an "ugly" scalefactor based on Y and 240
-  // float introscale = 1 + ( win_scalefactor - 1 ) * 240/350;
-  introscale = win_scalefactor * 240 > 350 ? win_scalefactor * 240 / 350 : 1;
-  printf("Intro would be in %f x %f\n", introscale * 640, introscale * 350);
-  set_gfx_mode (GFX_AUTODETECT_WINDOWED, introscale * 640, introscale * 350, 0, 0);
+  if (eichcfg.res.fullscreen) {
+    introXres = eichcfg.res.full.X;
+    introYres = eichcfg.res.full.Y;
+  } else {
+    introXres = eichcfg.res.window.X;
+    introYres = eichcfg.res.window.Y;
+  }
+  
 
+  xoffset=0;
+  xoutsize = introXres;
+  float aspect = (float) introXres / introYres;
+  // assuming 4/3 aspect originally (non-1:1 PAR):
+  if ( aspect > (float) 4/3 ) {
+    xoutsize = 4 *  introYres / 3;
+    xoffset = ( introXres - (xoutsize) ) /2;
+  };
+
+  printf("Got out coeffs offset %i, size %i, displayaspet %f\n", xoffset, xoutsize, aspect);
   // Initialize sound (volume)
   haltsound ();
 
-  //setvanillapalette(0);
+  // setvanillapalette(0);
   loadEGA ("BLICK.PAK");
   paper = loadfile (datapool, "PAPER.FNT");
 
@@ -194,15 +204,14 @@ void intro (void) {
     } while (!keypressed ());
   }
 
+  
+  glowout ();
   stop_sample (s);
-  //haltsound();
   unloadfile (ptr);
 
   unloadfile (paper);
+  clearscreen();
 
-  glowout ();
 
 // All this mode switching is a little bit a 'murks'. I know.
-  setxmode ();			// Switch back to X mode.
-  setstandardpalette ();
 }
