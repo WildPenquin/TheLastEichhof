@@ -20,6 +20,7 @@ You need Allegro 4, on Debian derivatives it comes as liballegro4-dev.
 There isn't a lot of configuration but you may try -x NUM -y NUM and 
 -X NUM -Y NUM parameters to set one and the other resolution, respectively =).
 The resolution(s) will be saved so you don't need to specify resolutions every time.
+(you need to toggle with ALT+ENTER or set something in options to trigger save).
 
 A BIT ABOUT THE LAST EICHHOF 
 
