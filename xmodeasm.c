@@ -31,6 +31,26 @@ void setxmode (void) {
   request_refresh_rate (60);
 
   int allegrogfxmode = eichcfg.res.truefullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED;
+  int deskX, deskY;
+  get_desktop_resolution(&deskX, &deskY);
+
+  printf("Your desktop resolution is: %i x %i\n", deskX, deskY);
+
+  int maxscale = deskX / (XMAX+1);
+  maxscale = ( deskY / (YMAX+1) ) < maxscale ? deskY / (YMAX+1) : maxscale;
+  printf("A recommended max window size would be: %i, %i (scale %i)", (XMAX+1)*maxscale, (YMAX+1)*maxscale, maxscale);
+  printf("A smaller window size would be: %i, %i (scale %i)", (XMAX+1)*maxscale/2, (YMAX+1)*maxscale/2, maxscale/2);
+
+  bool autores = true;
+
+  if ( eichcfg.res.full.X == 0 || eichcfg.res.full.Y == 0 ) {
+    eichcfg.res.full.X = deskX;
+    eichcfg.res.full.Y = deskY;
+  }
+  if ( eichcfg.res.window.X == 0 || eichcfg.res.window.Y == 0 ) {
+    eichcfg.res.window.X = (XMAX+1)*maxscale/2;
+    eichcfg.res.window.Y = (YMAX+1)*maxscale/2;
+  }
 
   destroy_pages();
   if (eichcfg.res.fullscreen) {

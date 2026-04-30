@@ -207,6 +207,8 @@ void cmdline (int argc, char *argv[]) {
     printf ("  /ns     Play without sound.\n");
     printf ("  -x 960 -y 660   set window resolution,\n");
     printf ("  -X 3440 -Y 1440 set another resolution\n");
+    printf ("  -r      Reset / auto-detect window resolution\n");
+    printf ("  -R      Reset / auto-detect alt (fs) resolution\n");
     printf ("\n");
     printf
       ("To force SoundBlaster on, use the BLASTER environment variable.\n");
@@ -223,7 +225,7 @@ void cmdline (int argc, char *argv[]) {
   strupr (cmd);
 
   int c;
-  while ((c = getopt(argc, argv, ":x:y:X:Y:")) != -1) {
+  while ((c = getopt(argc, argv, ":x:y:X:Y:rR")) != -1) {
     switch(c) {
       case 'x':
         printf("x res %i\n", atoi(optarg));
@@ -241,12 +243,17 @@ void cmdline (int argc, char *argv[]) {
         printf("Y res %i\n", atoi(optarg));
         fullcandres.Y = atoi(optarg);
         break;
+      case 'r':
+        wincandres.Y = wincandres.X = -1;
+        break;
+      case 'R':
+        fullcandres.Y = fullcandres.X = -1;
+        break;
       case '?':
                     fprintf(stderr,
                 "Unrecognized option: '-%c'\n", optopt);
     }
   }
-  printf("candres %i, %i, %i, %i\n", wincandres.X, wincandres.Y, fullcandres.X, fullcandres.X);
 
 // Help?
   if (strstr (cmd, "/?") || strstr (cmd, "-?") || strstr(cmd, "-h") ) {	// Help?
@@ -297,11 +304,16 @@ int main (int argc, char *argv[]) {
 // Load options of last time.
   loadconfig ();
 
-  if (fullcandres.X != 0 && fullcandres.Y != 0 ) {
+  if (fullcandres.X < 0 || fullcandres.Y < 0 ) { // reset
+    eichcfg.res.full.X = eichcfg.res.full.Y = 0;
+  } else if (fullcandres.X != 0 && fullcandres.Y != 0 ) {
     eichcfg.res.full.X = fullcandres.X;
     eichcfg.res.full.Y = fullcandres.Y;
   }
-  if (wincandres.X != 0 && wincandres.Y != 0 ) {
+
+  if (wincandres.X < 0 || wincandres.Y < 0 ) { // reset
+    eichcfg.res.window.X = eichcfg.res.window.Y = 0;
+  } else if (wincandres.X != 0 && wincandres.Y != 0 ) {
     eichcfg.res.window.X = wincandres.X;
     eichcfg.res.window.Y = wincandres.Y;
   }
