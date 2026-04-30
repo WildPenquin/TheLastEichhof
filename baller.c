@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "xmode.h"
 #include "fileman.h"
@@ -163,6 +164,8 @@ void powerdown (void) {
   shutfilemanager ();
 }
 
+struct resolution_s wincandres={0,0};
+struct resolution_s fullcandres={0,0};
 
 
 /*------------------------------------------------------
@@ -174,6 +177,19 @@ void cmdline (int argc, char *argv[]) {
   int i;
   char *e1;
 
+  void printhelpstring() {
+    printf ("Syntax:   BALLER [options]\n");
+    printf ("  /vga    Override VGA detection.\n");
+    printf ("  /ns     Play without sound.\n");
+    printf ("  -x 960 -y 660   set window resolution,\n");
+    printf ("  -X 3440 -Y 1440 set another resolution\n");
+    printf ("\n");
+    printf
+      ("To force SoundBlaster on, use the BLASTER environment variable.\n");
+    printf ("  e.g. set BLASTER = A220 I7 D1\n");
+    printf ("\n\n");
+  }
+
 // Concatenate all command strings together in 'cmd'.
   cmd[0] = '\0';		// Clear string.
   for (i = 1; i < argc; i++) {
@@ -182,17 +198,35 @@ void cmdline (int argc, char *argv[]) {
   }
   strupr (cmd);
 
+  int c;
+  while ((c = getopt(argc, argv, ":x:y:X:Y:")) != -1) {
+    switch(c) {
+      case 'x':
+        printf("x res %i\n", atoi(optarg));
+        wincandres.X = atoi(optarg);
+        break;
+      case 'y':
+        printf("y res %i\n", atoi(optarg));
+        wincandres.Y = atoi(optarg);
+        break;
+      case 'X':
+        printf("X res %i\n", atoi(optarg));
+        fullcandres.X = atoi(optarg);
+        break;
+      case 'Y':
+        printf("Y res %i\n", atoi(optarg));
+        fullcandres.Y = atoi(optarg);
+        break;
+      case '?':
+                    fprintf(stderr,
+                "Unrecognized option: '-%c'\n", optopt);
+    }
+  }
+  printf("candres %i, %i, %i, %i\n", wincandres.X, wincandres.Y, fullcandres.X, fullcandres.X);
+
 // Help?
   if (strstr (cmd, "/?") || strstr (cmd, "-?") || strstr(cmd, "-h") ) {	// Help?
-    printf ("Syntax:   BALLER [options]\n");
-    printf ("  /vga    Override VGA detection.\n");
-    printf ("  /ns     Play without sound.\n");
-    printf ("  /sX     Set window scale to X\n");
-    printf ("\n");
-    printf
-      ("To force SoundBlaster on, use the BLASTER environment variable.\n");
-    printf ("  e.g. set BLASTER = A220 I7 D1\n");
-    printf ("\n\n");
+    printhelpstring();
     exit (0);			// Exit nicely.
   }
 
@@ -233,11 +267,20 @@ int main (int argc, char *argv[]) {
 // Process command line.
   cmdline (argc, argv);
 
+//
   eichcfg = BeerConfigDefault;
 
 // Load options of last time.
   loadconfig ();
 
+  if (fullcandres.X != 0 && fullcandres.Y != 0 ) {
+    eichcfg.res.full.X = fullcandres.X;
+    eichcfg.res.full.Y = fullcandres.Y;
+  }
+  if (wincandres.X != 0 && wincandres.Y != 0 ) {
+    eichcfg.res.window.X = wincandres.X;
+    eichcfg.res.window.Y = wincandres.Y;
+  }
 // Do initialization.
   powerup ();
 

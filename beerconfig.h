@@ -36,8 +36,8 @@ static struct beerconfig_s {
     KEY_P,
     { true, true, true },
     { 
-      { 3440, 1440},
-      { 640, 480 },
+      { 1920, 1080},
+      { 640, 440 },
       false, false
     }
 };
