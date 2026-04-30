@@ -34,10 +34,10 @@ static struct beerconfig_s {
     KEY_DOWN,
     KEY_SPACE,
     KEY_P,
-    { true, true, true },
+    { true, true, true }, // sound
     { 
-      { 1920, 1080},
-      { 640, 440 },
+      { 0 , 0 }, // xmodeasm will auto-detect
+      { 0 , 0 },
       false, false
     }
 };
