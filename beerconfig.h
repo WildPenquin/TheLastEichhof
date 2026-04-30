@@ -15,6 +15,9 @@ enum scalingmode {
   STRETCH
 };
 
+struct misc_s {
+  bool verbose;
+};
 
 struct graphic_s {
   struct resolution_s full;
@@ -26,7 +29,7 @@ struct graphic_s {
   enum scalingmode scale; 
 };
 
-#define CFG_REVISION PACKAGE_NAME"20Rr_____"
+#define CFG_REVISION PACKAGE_NAME"20A______"
 
 static struct beerconfig_s {
   char versionstring[20];
@@ -38,6 +41,7 @@ static struct beerconfig_s {
   short key_pause;
   struct sound_s ss;
   struct graphic_s res;
+  struct misc_s misc;
 } BeerConfigDefault = {
     "INVALID",
     KEY_LEFT,
@@ -52,7 +56,8 @@ static struct beerconfig_s {
       { 0 , 0 },
       false, false,
       ASPECT
-    }
+    },
+    { false }
 };
 
 typedef struct beerconfig_s beerconfig;

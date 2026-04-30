@@ -111,6 +111,7 @@ void powerup (void) {
 
 void create_pages (void) {
   bool vignetted = true; // letterboxing check WIP
+  bool resverbose = eichcfg.misc.verbose; // more verbose printing of resolution and aspect handling
   struct resolution_s vignetres;
   static bool firstcreate = true; 
   int GameResX, GameResY, paddedXres, paddedYres;
@@ -126,21 +127,35 @@ void create_pages (void) {
   GameResY = YMAX+1;
 
   float aspect = (float) vignetres.X/ vignetres.Y;
-  paddedXres = aspect * GameResY;
-  paddedYres = GameResX / aspect; 
-  printf("Paddedresvals %i, %i, aspect %f, orif aspect %f \n", paddedXres, paddedYres, aspect, (float) GameResX/GameResY);
-  if ( aspect > (float) GameResX/GameResY ) {
-    printf("Creating vignetted window\n");
-    paddedYres = GameResY;
-  } else if (aspect == (float) GameResX/GameResY) {
-    printf("Creating NON-vignetted window\n");
-  } else {
-    printf("Taller windows not implemented, resetting paddedXres\n");
+  // TODO: this is the ASPECT scaling. Implement INTEGER and STRETCH
+  if ( eichcfg.res.scale == STRETCH ) { // INTEGER scaling - use the maximum which can fit into vignet
+    if ( resverbose ) printf("Will use STRETCH scaling\n");
     paddedXres = GameResX;
+    paddedYres = GameResY;
+    aspect = (float) 16/11;
+  } else if ( eichcfg.res.scale == INTEGER ) {
+    int maxaspect_int = ( vignetres.X / GameResX < vignetres.Y / GameResY ) ?
+      vignetres.X / GameResX :
+      vignetres.Y / GameResY ;
+    paddedXres = vignetres.X/maxaspect_int;
+    paddedYres = vignetres.Y/maxaspect_int;
+    if ( resverbose ) printf("Will use INTEGER scaling with int scaler %i\n", maxaspect_int);
+  } else {  // ASPECT corrected (default)
+    paddedXres = aspect * GameResY;
+    paddedYres = GameResX / aspect; 
+    if ( aspect > (float) GameResX/GameResY ) {
+      if (resverbose) printf("Creating vignetted window\n");
+      paddedYres = GameResY;
+    } else if (aspect == (float) GameResX/GameResY) {
+      if (resverbose) printf("Creating NON-vignetted window\n");
+    } else {
+      paddedXres = GameResX;
+    }
   }
 
+  if ( resverbose) printf("Paddedresvals %i, %i, aspect %f, orig aspect %f \n", paddedXres, paddedYres, aspect, (float) GameResX/GameResY);
 
-  printf("Paddedresvals when createing are %i, %i, aspect %f\n", paddedXres, paddedYres, aspect);
+  if ( resverbose ) printf("Paddedresvals when createing are %i, %i, aspect %f\n", paddedXres, paddedYres, aspect);
   vignet_pages[0] = create_system_bitmap (paddedXres, paddedYres);
   clear_bitmap(vignet_pages[0]);
   vignet_pages[1] = create_system_bitmap (paddedXres, paddedYres);
@@ -151,22 +166,19 @@ void create_pages (void) {
   pages[0] = create_sub_bitmap (full_pages[0], 0, 0, windowx1, windowy1);
   pages[1] = create_sub_bitmap (full_pages[1], 0, 0, windowx1, windowy1);
   if ( pages_temp[0] && pages_temp[1] ) { // FS was toggled, we need to restore bitmaps
-    printf("Blitting temp pages, %b\n", firstcreate);
     blit(pages_temp[0], full_pages[0], 0, 0, 0, 0, GameResX, GameResY);
     blit(pages_temp[1], full_pages[1], 0, 0, 0, 0, GameResX, GameResY);
     destroy_bitmap(pages_temp[0]);
     destroy_bitmap(pages_temp[1]);
   }
   firstcreate = false;
-  printf("Pages created - window %i, %i\n", windowx1, windowy1);
+  if ( resverbose ) printf("Pages created - window %i, %i\n", windowx1, windowy1);
 }
 
 void destroy_pages (void) {
   int GameResX = XMAX+1;
   int GameResY = YMAX+1;
-  printf("Destryoying pages\n");
   if ( full_pages[0] && full_pages[1] ) { // we have game bitmap pages to save!
-    printf("blitting To TEMP page there!\n");
     pages_temp[0] = create_bitmap (GameResX, GameResY);
     pages_temp[1] = create_bitmap (GameResX, GameResY);
     blit(full_pages[0], pages_temp[0], 0, 0, 0, 0, GameResX, GameResY);
@@ -203,13 +215,15 @@ void cmdline (int argc, char *argv[]) {
   char *e1;
 
   void printhelpstring() {
-    printf ("Syntax:   BALLER [options]\n");
-    printf ("  /vga    Override VGA detection.\n");
-    printf ("  /ns     Play without sound.\n");
+    printf ("Syntax:           BALLER [options]\n");
+    printf ("  /vga            Override VGA detection.\n");
+    printf ("  /ns             Play without sound.\n");
     printf ("  -x 960 -y 660   set window resolution,\n");
-    printf ("  -X 3440 -Y 1440 set another resolution\n");
-    printf ("  -r      Reset / auto-detect window resolution\n");
-    printf ("  -R      Reset / auto-detect alt (fs) resolution\n");
+    printf ("  -X 3440 -Y 1440 set another resolution,\n");
+    printf ("  -r              Reset / auto-detect window resolution.\n");
+    printf ("  -R              Reset / auto-detect another resolution.\n");
+    printf ("  -s a|i|s        Use aspect (default), integer or stretch scaling.\n");
+    printf ("  -v              Add some verbosity to output.\n");
     printf ("\n");
     printf
       ("To force SoundBlaster on, use the BLASTER environment variable.\n");
@@ -226,32 +240,37 @@ void cmdline (int argc, char *argv[]) {
   strupr (cmd);
 
   int c;
-  while ((c = getopt(argc, argv, ":x:y:X:Y:rRf")) != -1) {
+  while ((c = getopt(argc, argv, ":x:y:X:Y:rRfs:iav")) != -1) {
     switch(c) {
       case 'x':
-        printf("x res %i\n", atoi(optarg));
-        wincandres.X = atoi(optarg);
+        eichcfg.res.window.X = atoi(optarg);
         break;
       case 'y':
-        printf("y res %i\n", atoi(optarg));
-        wincandres.Y = atoi(optarg);
+        eichcfg.res.window.Y = atoi(optarg);
         break;
       case 'X':
-        printf("X res %i\n", atoi(optarg));
-        fullcandres.X = atoi(optarg);
+        eichcfg.res.full.X = atoi(optarg);
         break;
       case 'Y':
-        printf("Y res %i\n", atoi(optarg));
-        fullcandres.Y = atoi(optarg);
+        eichcfg.res.full.Y = atoi(optarg);
         break;
       case 'f':
-        toggletruefullscreen = true;
+        eichcfg.res.truefullscreen = !eichcfg.res.truefullscreen;
         break;
       case 'r':
-        wincandres.Y = wincandres.X = -1;
+        eichcfg.res.window.X = eichcfg.res.window.Y = 0;
         break;
       case 'R':
-        fullcandres.Y = fullcandres.X = -1;
+        eichcfg.res.full.X = eichcfg.res.full.Y = 0;
+        break;
+      case 's':
+        if ( strcmp(optarg, "a" ) == 0 ) eichcfg.res.scale = ASPECT;
+        else if ( strcmp(optarg, "s" ) == 0 ) eichcfg.res.scale = STRETCH;
+        else if ( strcmp(optarg, "i" ) == 0 ) eichcfg.res.scale = INTEGER;
+        else printf("Unknown scaling parameter, ignored (%s)\n", optarg);
+        break;
+      case 'v':
+        eichcfg.misc.verbose = !eichcfg.misc.verbose;
         break;
       case '?':
                     fprintf(stderr,
@@ -299,29 +318,12 @@ int main (int argc, char *argv[]) {
   printf ("\nInternet contact address: tritone@ezinfo.vmsmail.ethz.ch\n\n\n");
 #endif
 
-// Process command line.
-  cmdline (argc, argv);
 
 // Load options of last time.
   loadconfig ();
 
-  if (fullcandres.X < 0 || fullcandres.Y < 0 ) { // reset
-    eichcfg.res.full.X = eichcfg.res.full.Y = 0;
-  } else if (fullcandres.X != 0 && fullcandres.Y != 0 ) {
-    eichcfg.res.full.X = fullcandres.X;
-    eichcfg.res.full.Y = fullcandres.Y;
-  }
-
-  if (wincandres.X < 0 || wincandres.Y < 0 ) { // reset
-    eichcfg.res.window.X = eichcfg.res.window.Y = 0;
-  } else if (wincandres.X != 0 && wincandres.Y != 0 ) {
-    eichcfg.res.window.X = wincandres.X;
-    eichcfg.res.window.Y = wincandres.Y;
-  }
-
-  if ( toggletruefullscreen )  {
-    eichcfg.res.truefullscreen = !eichcfg.res.truefullscreen;
-  }
+// Process command line.
+  cmdline (argc, argv);
 
 // Do initialization.
   powerup ();
@@ -335,10 +337,7 @@ int main (int argc, char *argv[]) {
   initfilemanager (40, 512, 8192, error);
   datapool = opendatabase (findbeerfile (BEER_DATAFILE));
 
-  printf("LIMITS ARE %i, %i\n", PATH_MAX, NAME_MAX);
-  // setxmode();
   intro ();			// Show Blick intro.
-
 
   menu ();
 
