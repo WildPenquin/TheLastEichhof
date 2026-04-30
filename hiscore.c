@@ -92,14 +92,14 @@ static void decodescore (void) {
   }
 }
 
-void loadhighscore (int *filvar) {
-  read (*filvar, &hstxt, sizeof (struct highscoretext));
+void loadhighscore (FILE *filvar) {
+  fread(&hstxt, sizeof(struct highscoretext), 1, filvar);
   decodescore ();
 }
 
-void savehighscore (int *filvar) {
+void savehighscore (FILE *filvar) {
   codescore ();
-  write (*filvar, &hstxt, sizeof (struct highscoretext));
+  fwrite(&hstxt, sizeof(struct highscoretext), 1, filvar);
   decodescore ();
 }
 

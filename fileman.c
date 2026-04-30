@@ -80,9 +80,16 @@ static void errf (char *text, int code, ...) {
 char beerconfigfile[PATH_MAX] = "0";
 char beerdatafile[PATH_MAX] = "0";
 
-const char filenames[2][NAME_MAX] = {
+struct beerfileentry {
+  char name[NAME_MAX];
+  char path[PATH_MAX];
+};
+
+
+const char filenames[3][NAME_MAX] = {
   {"lastbeer.bin"},
-  {"conf_hs.bin"}
+  {"config.bin"},
+  ("highscore.bin")
 };
 
 /*------------------------------------------------------
@@ -96,8 +103,11 @@ const char *givebeerfilename (enum beerfile file_entry) {
   case BEER_DATAFILE:
     return (&filenames[0][0]);
     break;
-  case BEER_CONFIG_HISCORE:
+  case BEER_CONFIG:
     return (&filenames[1][0]);
+    break;
+  case BEER_HISCORE:
+    return (&filenames[2][0]);
     break;
   }
 }
@@ -113,7 +123,7 @@ char *findbeerfile (enum beerfile file_entry) {
   const char *filename = givebeerfilename (file_entry);
   switch (file_entry) {
   case BEER_DATAFILE:		// in DATADIR/PACKAGE_NAME or local dir
-    if (strcmp (beerdatafile, "0") != 0)
+    if (strcmp (beerdatafile, "0") != 0) // alredy found
       return beerdatafile;
     const char *datafilename = filename;
     char fulldatapath[PATH_MAX];
@@ -132,8 +142,8 @@ char *findbeerfile (enum beerfile file_entry) {
     return beerdatafile;
     break;
 
-  case BEER_CONFIG_HISCORE:	// Order of search: LOCALSTATEDIR, HOME. current dir
-    if (strcmp (beerconfigfile, "0") != 0)
+  case BEER_CONFIG:	// Order of search: LOCALSTATEDIR, HOME. current dir
+    if (strcmp (beerconfigfile, "0") != 0) // already found
       return beerconfigfile;
     const char *conffilename = filename;
     char confdir[PATH_MAX];	// directory

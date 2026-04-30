@@ -25,7 +25,8 @@ void printbuffer (void);
 // List files the game needs here
 enum beerfile {
   BEER_DATAFILE,
-  BEER_CONFIG_HISCORE
+  BEER_CONFIG,
+  BEER_HISCORE
 };
 
 // function to return pointer with full path to beerfile

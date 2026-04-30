@@ -51,7 +51,8 @@ void loadconfig (void) {
   char configidstring[] = CFG_REVISION;
   char configid_read[sizeof(configidstring)];
 
-  char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
+  char *fullpath = findbeerfile (BEER_CONFIG);
+  char *hiscore = findbeerfile (BEER_HISCORE);
   printf ("Opening conf file %s ...\n", fullpath);
 
 
@@ -61,6 +62,7 @@ void loadconfig (void) {
     /* FIXME: Don't assume that a short int is 2 bytes and little-endian. */
     /* how does this relate to the struct??? */
     fread(&eichcfg, sizeof(beerconfig), 1, cfgfile);
+    loadhighscore(cfgfile);
     printf("CFG strings %s and %s \n", configid_read, configidstring );
     if ( strcmp(configid_read, configidstring) != 0 ) { // old config file!
       // BACK UP OLD FILE!
@@ -99,7 +101,8 @@ void saveconfig (void) {
   bool cfg_panfoesound;
   char configidstring[] = CFG_REVISION;
 
-  char *fullpath = findbeerfile (BEER_CONFIG_HISCORE);
+  char *fullpath = findbeerfile (BEER_CONFIG);
+  char *hiscore = findbeerfile (BEER_HISCORE);
 
   printf ("Saving config to %s\n", fullpath);
   FILE* cfgfile; 
@@ -107,6 +110,7 @@ void saveconfig (void) {
 
     fputs(configidstring, cfgfile);
     fwrite(&eichcfg, sizeof(beerconfig), 1, cfgfile);
+    savehighscore(cfgfile);
     fclose (cfgfile);
   }
 }

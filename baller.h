@@ -1,5 +1,6 @@
 /* Allegro port Copyright (C) 2014 Gavin Smith. */
 #include "xmode.h"
+#include <stdio.h>
 
 #define FALSE			0
 //#define TRUE                  1
@@ -335,8 +336,8 @@ void error (char *text, int code, ...);
 void intro (void);
 
 // Functions of module 'hiscore.c'
-void loadhighscore (int *filvar);
-void savehighscore (int *filvar);
+void loadhighscore (FILE *filvar);
+void savehighscore (FILE *filvar);
 void highscore (char fullmode);
 
 // Functions of module 'menu.c'
