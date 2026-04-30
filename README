@@ -43,6 +43,11 @@ This means you will get pillarboxing (or letterboxing) if your resolution is
 not a multiple of the game resolution 16x11 (320x220), or 4:3 for the Blick intro 
 (but the Blick intro graphics has a black backdrop anyways...).
 
+If you are not satisfied with the scaling options the game currently offers,
+set a resolution of 320 x 220 (or whatever you like) and use gamescope. However
+gamescope causes some very minor glitches with some timing (mainly effects the
+shop money decrement animation, I haven't noticed in-game effects).
+
 KNOWN ISSUES
 
 This game uses Allegro 4. That library is ancient and unmaintained (Allegro5 is 
