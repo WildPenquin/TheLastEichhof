@@ -32,6 +32,7 @@ void setxmode (void) {
 
   int allegrogfxmode = eichcfg.res.truefullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED;
 
+  destroy_pages();
   if (eichcfg.res.fullscreen) {
     set_gfx_mode(allegrogfxmode,
         eichcfg.res.full.X, eichcfg.res.full.Y,
@@ -41,7 +42,6 @@ void setxmode (void) {
         eichcfg.res.window.X, eichcfg.res.window.Y,
         0, 0);
   }
-  destroy_pages();
   create_pages();
 }
 

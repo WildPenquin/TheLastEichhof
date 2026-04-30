@@ -19,6 +19,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <unistd.h>
+#include <linux/limits.h>
 
 #include "xmode.h"
 #include "fileman.h"
@@ -33,6 +34,8 @@
 static char cmd[CMDLEN];	// Command line given at startup.
 extern unsigned _stklen;	// Programs stacklength.
 
+// Saving when toggling fullscreen
+BITMAP* pages_temp[2];
 
 // Code.
 
@@ -105,9 +108,12 @@ void powerup (void) {
 
 }
 
+
 void create_pages (void) {
   bool vignetted = true; // letterboxing check WIP
   struct resolution_s vignetres;
+  static bool firstcreate = true; 
+  int GameResX, GameResY, paddedXres, paddedYres;
   if (eichcfg.res.fullscreen) {
     vignetres.X = eichcfg.res.full.X;
     vignetres.Y = eichcfg.res.full.Y;
@@ -116,12 +122,12 @@ void create_pages (void) {
     vignetres.Y = eichcfg.res.window.Y;
   }
 
-  int GameResX = XMAX+1;
-  int GameResY = YMAX+1; // why exactly +9 and not +1, don't ask me!
+  GameResX = XMAX+1;
+  GameResY = YMAX+1;
 
   float aspect = (float) vignetres.X/ vignetres.Y;
-  int paddedXres = aspect * GameResY;
-  int paddedYres = GameResX / aspect; 
+  paddedXres = aspect * GameResY;
+  paddedYres = GameResX / aspect; 
   printf("Paddedresvals %i, %i, aspect %f, orif aspect %f \n", paddedXres, paddedYres, aspect, (float) GameResX/GameResY);
   if ( aspect > (float) GameResX/GameResY ) {
     printf("Creating vignetted window\n");
@@ -139,15 +145,33 @@ void create_pages (void) {
   clear_bitmap(vignet_pages[0]);
   vignet_pages[1] = create_system_bitmap (paddedXres, paddedYres);
   clear_bitmap(vignet_pages[1]);
-  full_pages[0] = create_sub_bitmap (vignet_pages[0], (paddedXres - 320) / 2, (paddedYres - paddedYres ) / 2 , GameResX, GameResY);
-  full_pages[1] = create_sub_bitmap (vignet_pages[1], (paddedXres - 320) / 2, (paddedYres - paddedYres ) / 2 , GameResX, GameResY);
+  full_pages[0] = create_sub_bitmap (vignet_pages[0], (paddedXres - GameResX) / 2, (paddedYres - GameResY) / 2 , GameResX, GameResY);
+  full_pages[1] = create_sub_bitmap (vignet_pages[1], (paddedXres - GameResX) / 2, (paddedYres - GameResY) / 2 , GameResX, GameResY);
 
   pages[0] = create_sub_bitmap (full_pages[0], 0, 0, windowx1, windowy1);
   pages[1] = create_sub_bitmap (full_pages[1], 0, 0, windowx1, windowy1);
+  if ( pages_temp[0] && pages_temp[1] ) { // FS was toggled, we need to restore bitmaps
+    printf("Blitting temp pages, %b\n", firstcreate);
+    blit(pages_temp[0], full_pages[0], 0, 0, 0, 0, GameResX, GameResY);
+    blit(pages_temp[1], full_pages[1], 0, 0, 0, 0, GameResX, GameResY);
+    destroy_bitmap(pages_temp[0]);
+    destroy_bitmap(pages_temp[1]);
+  }
+  firstcreate = false;
   printf("Pages created - window %i, %i\n", windowx1, windowy1);
 }
 
 void destroy_pages (void) {
+  int GameResX = XMAX+1;
+  int GameResY = YMAX+1;
+  printf("Destryoying pages\n");
+  if ( full_pages[0] && full_pages[1] ) { // we have game bitmap pages to save!
+    printf("blitting To TEMP page there!\n");
+    pages_temp[0] = create_bitmap (GameResX, GameResY);
+    pages_temp[1] = create_bitmap (GameResX, GameResY);
+    blit(full_pages[0], pages_temp[0], 0, 0, 0, 0, GameResX, GameResY);
+    blit(full_pages[1], pages_temp[1], 0, 0, 0, 0, GameResX, GameResY);
+  }
   destroy_bitmap(pages[0]);
   destroy_bitmap(pages[1]);
   destroy_bitmap(full_pages[0]);
@@ -293,6 +317,7 @@ int main (int argc, char *argv[]) {
   initfilemanager (40, 512, 8192, error);
   datapool = opendatabase (findbeerfile (BEER_DATAFILE));
 
+  printf("LIMITS ARE %i, %i\n", PATH_MAX, NAME_MAX);
   // setxmode();
   intro ();			// Show Blick intro.
 
