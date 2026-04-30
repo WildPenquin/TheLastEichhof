@@ -302,9 +302,6 @@ int main (int argc, char *argv[]) {
 // Process command line.
   cmdline (argc, argv);
 
-//
-  eichcfg = BeerConfigDefault;
-
 // Load options of last time.
   loadconfig ();
 

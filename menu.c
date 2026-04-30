@@ -41,15 +41,9 @@
 #define LOCALSTATEDIR "."
 #endif
 
-#define CFG_REVISION PACKAGE_NAME"20wr_____" // Change if configuration structure changes!
-
-
-
 // TODO: use something like json for config instead of binary file...
 // TODO: separate config and highscore file?
 void loadconfig (void) {
-  char configidstring[] = CFG_REVISION;
-  char configid_read[sizeof(configidstring)];
 
   char *fullpath = findbeerfile (BEER_CONFIG);
   char *hiscore = findbeerfile (BEER_HISCORE);
@@ -58,29 +52,31 @@ void loadconfig (void) {
 
   FILE* cfgfile; 
   if ( cfgfile = fopen(fullpath, "rb") ) {
-    fgets(configid_read, sizeof(configidstring), cfgfile);
     /* FIXME: Don't assume that a short int is 2 bytes and little-endian. */
     /* how does this relate to the struct??? */
     fread(&eichcfg, sizeof(beerconfig), 1, cfgfile);
-    loadhighscore(cfgfile);
-    printf("CFG strings %s and %s \n", configid_read, configidstring );
-    if ( strcmp(configid_read, configidstring) != 0 ) { // old config file!
+    if ( strcmp(eichcfg.versionstring, CFG_REVISION ) != 0 ) { // old config file!
       // BACK UP OLD FILE!
       printf("Incompatible config file revision.\n Backing up and resetting config\n");
-      strcpy(configid_read, "INVALID");
+      eichcfg = BeerConfigDefault; // Restore default
       char configbackup[PATH_MAX];
       strcpy(configbackup, fullpath);
       strcat(configbackup, ".bak");
       fclose(cfgfile);
       if ( rename(fullpath, configbackup) != 0 ) {
-        printf("Renaming config from %s to %s failed with %s", fullpath, configbackup, strerror(errno));
+        printf("Renaming old config file failed from %s to %s, %s", fullpath, configbackup, strerror(errno));
       };
+    } else {
+      loadhighscore(cfgfile);
+      fclose(cfgfile);
     }
-  } else strcpy(configid_read, "INVALID");
+  } else { // could not get config:
+    eichcfg = BeerConfigDefault;
+  }
 
-  if ( strcmp(configid_read, "INVALID") == 0 ) {
+  if ( strcmp(eichcfg.versionstring, "INVALID" ) == 0 ) {
     printf("no usable config found, reset.\n");
-  } else fclose(cfgfile);
+  }
 
   key_up = eichcfg.key_up;
   key_down = eichcfg.key_down;
@@ -92,7 +88,8 @@ void loadconfig (void) {
   speaker(eichcfg.ss.sound);
   panxplosion(eichcfg.ss.pan_sfx);
   panfoesound(eichcfg.ss.pan_foes);
-  printf("success (revision %s)\n", configid_read, configidstring);
+  sprintf(eichcfg.versionstring, CFG_REVISION);
+  printf("Configuration success (revision %s)\n", eichcfg.versionstring);
 }
 
 void saveconfig (void) {
@@ -108,7 +105,7 @@ void saveconfig (void) {
   FILE* cfgfile; 
   if ( cfgfile = fopen(fullpath, "wb") ) {
 
-    fputs(configidstring, cfgfile);
+    // fputs(configidstring, cfgfile);
     fwrite(&eichcfg, sizeof(beerconfig), 1, cfgfile);
     savehighscore(cfgfile);
     fclose (cfgfile);

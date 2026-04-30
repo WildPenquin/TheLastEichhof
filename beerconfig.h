@@ -9,6 +9,13 @@ struct resolution_s {
   short Y;
 };
 
+enum scalingmode {
+  ASPECT,
+  INTEGER,
+  STRETCH
+};
+
+
 struct graphic_s {
   struct resolution_s full;
   struct resolution_s window;
@@ -16,9 +23,13 @@ struct graphic_s {
   bool truefullscreen; // per default, just two resolutions
                        // Allegro4 is buggy on Wayland (input breaks down)
                        // But you may still enable this if you are on X.Org
+  enum scalingmode scale; 
 };
 
+#define CFG_REVISION PACKAGE_NAME"20Rr_____"
+
 static struct beerconfig_s {
+  char versionstring[20];
   short key_left;
   short key_right;
   short key_up;
@@ -28,6 +39,7 @@ static struct beerconfig_s {
   struct sound_s ss;
   struct graphic_s res;
 } BeerConfigDefault = {
+    "INVALID",
     KEY_LEFT,
     KEY_RIGHT,
     KEY_UP,
@@ -38,7 +50,8 @@ static struct beerconfig_s {
     { 
       { 0 , 0 }, // xmodeasm will auto-detect
       { 0 , 0 },
-      false, false
+      false, false,
+      ASPECT
     }
 };
 
