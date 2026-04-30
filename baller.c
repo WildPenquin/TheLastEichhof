@@ -188,9 +188,10 @@ void powerdown (void) {
   shutfilemanager ();
 }
 
+// cmdline handling (elsewhere):
 struct resolution_s wincandres={0,0};
 struct resolution_s fullcandres={0,0};
-
+static bool toggletruefullscreen = false;
 
 /*------------------------------------------------------
 Function: cmdline
@@ -225,7 +226,7 @@ void cmdline (int argc, char *argv[]) {
   strupr (cmd);
 
   int c;
-  while ((c = getopt(argc, argv, ":x:y:X:Y:rR")) != -1) {
+  while ((c = getopt(argc, argv, ":x:y:X:Y:rRf")) != -1) {
     switch(c) {
       case 'x':
         printf("x res %i\n", atoi(optarg));
@@ -242,6 +243,9 @@ void cmdline (int argc, char *argv[]) {
       case 'Y':
         printf("Y res %i\n", atoi(optarg));
         fullcandres.Y = atoi(optarg);
+        break;
+      case 'f':
+        toggletruefullscreen = true;
         break;
       case 'r':
         wincandres.Y = wincandres.X = -1;
@@ -317,6 +321,11 @@ int main (int argc, char *argv[]) {
     eichcfg.res.window.X = wincandres.X;
     eichcfg.res.window.Y = wincandres.Y;
   }
+
+  if ( toggletruefullscreen )  {
+    eichcfg.res.truefullscreen = !eichcfg.res.truefullscreen;
+  }
+
 // Do initialization.
   powerup ();
 

@@ -16,8 +16,6 @@
 #include "baller.h"
 #include "beerconfig.h"
 
-bool truefullscreen = false;
-
 extern volatile int subtick;
 
 void toggle_fullscreen (void) {
@@ -30,16 +28,12 @@ void setxmode (void) {
   set_color_depth (8);
   request_refresh_rate (60);
 
-  int allegrogfxmode = eichcfg.res.truefullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED;
+  int allegrogfxmode = GFX_AUTODETECT_WINDOWED;
   int deskX, deskY;
   get_desktop_resolution(&deskX, &deskY);
 
-  printf("Your desktop resolution is: %i x %i\n", deskX, deskY);
-
   int maxscale = deskX / (XMAX+1);
   maxscale = ( deskY / (YMAX+1) ) < maxscale ? deskY / (YMAX+1) : maxscale;
-  printf("A recommended max window size would be: %i, %i (scale %i)", (XMAX+1)*maxscale, (YMAX+1)*maxscale, maxscale);
-  printf("A smaller window size would be: %i, %i (scale %i)", (XMAX+1)*maxscale/2, (YMAX+1)*maxscale/2, maxscale/2);
 
   bool autores = true;
 
@@ -54,6 +48,7 @@ void setxmode (void) {
 
   destroy_pages();
   if (eichcfg.res.fullscreen) {
+    allegrogfxmode = eichcfg.res.truefullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED;
     set_gfx_mode(allegrogfxmode,
         eichcfg.res.full.X, eichcfg.res.full.Y,
         0, 0);
