@@ -17,36 +17,48 @@ line in Makefile.am.
 
 You need Allegro 4, on Debian derivatives it comes as liballegro4-dev.
 
+There isn't a lot of configuration but you may try -x NUM -y NUM and 
+-X NUM -Y NUM parameters to set one and the other resolution, respectively =).
+The resolution(s) will be saved so you don't need to specify resolutions every time.
+
+A BIT ABOUT THE LAST EICHHOF 
+
+The game uses 320 x 240 (kind of), but the intro uses 640 x 350. 
+These are both old VGA/EGA resolutions. 640 x 350 didn't have a square PAR 
+originally. Actually, the game uses some weird  slightly-less-tall than 240 
+resolution (320 x 220), which was commonplace with other DOS games, too (so, 
+not that weird actually). I haven't checked on a real hardware but this is probably 
+what it actually does (at least this is the window DOSBox creates, too).
+
+I'm assuming it originally intended to have square PAR, but on a real CRT, you 
+could adjust to fill the whole 4:3, if you so desired - achieving non-1:1 PAR. 
+Many DOS game have similar peculiarities (compared to modern games).
+
+The current implementation will always use correct aspect ratio, ASSUMING Blick 
+intro is 4:3 (PAR ~1,37), but in-game PAR is 1:1. But some other assumptions 
+could be just as valid, and user might just have preferences.
+
+This means you will get pillarboxing (or letterboxing) if your resolution is 
+not a multiple of the game resolution 16x11 (320x220), or 4:3 for the Blick intro 
+(but the Blick intro graphics has a black backdrop anyways...).
+
 KNOWN ISSUES
 
 This game uses Allegro 4. That library is ancient and unmaintained (Allegro5 is 
 active).
 
 Especially when playing on Wayland, fullscreen doesn't work properly. The game
-has trouble registering keystrokes (no problems under X.Org). Fullscreen will
-also be stretched on non 4:3, as the game (currently) just takes whatever 
-Allegro4 thinks is the best resolution.
+has trouble registering keystrokes, if fullscreen (no problems under X.Org). 
 
-Workarounds:
-- start with /SX to scale the game window. You can then yse your window manager 
-  to get the window borderless (and effectively fullscreen) or just play
-  in a larger window according to your preference.
-- The intro screen scale can be set with /ISX.
-- You can use float values for scaling (albeit integers will look best)
-- Use gamescope. Something like `-S integer -F pixel` get the results I like
-  most, but you might prefer something else. There may be slight graphical
-  slowdowns with gamescope (like the price decrement in the shop). Set in-game
-  scale to 1 if you use Gamescope as it will do it's own scaling!
+As a workaround, the game currently uses just two resolutions, Set the other to
+a small one and the other to a large one (like your desktop) and use your VM to 
+remove decorations to get a "fake fullscreen", aka "borderless fullscreen 
+window" in other games. I don't know how to remove window decorations (possibly
+doable, at least in some hacky way, but not platform independent).
 
-TODO: Instead set a fullscreen resolution, it's much more user friendly. Ask the 
-user for a windows size. As ffor Intro, don't resize but fit the intro into the
-desired game window.
+TODO: Make true fullscreen settable (true fullscreen should work on X.Org).
 
 TODO: Port to Allegro 5 =)
-
-The game uses 320 x 240 (scales nicely to 640 x 480) but the intro uses 
-640 x 350. These are both old VGA/EGA resolutions. 640 x 350 probably didn't
-have a square PAR originally.
 
 COPYING
 
