@@ -735,8 +735,10 @@ void keyboard (void) {
 
   int xchange = 0, ychange = 0;
 
-  if (key[KEY_ALT] && key[KEY_ENTER])
+  if (key[KEY_ALT] && key[KEY_ENTER]) {
     toggle_fullscreen ();
+    saveconfig ();
+  }
 
   if (key[key_left])
     xchange -= shipspeed;
