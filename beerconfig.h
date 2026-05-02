@@ -18,6 +18,7 @@ enum scalingmode {
 struct misc_s {
   bool speedrun;       // print speedrunning times to STDOUT
   bool verbose;        // print a bit more verbose stuff to STDOUT
+  char windowtitle[30];// Window title, set to something fun
 };
 
 struct graphic_s {
@@ -30,7 +31,7 @@ struct graphic_s {
   enum scalingmode scale; 
 };
 
-#define CFG_REVISION PACKAGE_NAME"20SR:::::"
+#define CFG_REVISION PACKAGE_NAME"20SR:::wt"
 
 static struct beerconfig_s {
   char versionstring[20];
@@ -58,7 +59,8 @@ static struct beerconfig_s {
       false, false,
       ASPECT
     },
-    { true , false}
+    { true, false,
+      "Keppana viimeinen" }
 };
 
 typedef struct beerconfig_s beerconfig;

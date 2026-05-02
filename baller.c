@@ -100,7 +100,8 @@ void powerup (void) {
   install_timer ();
   setspeed (GAMESPEED);
 
-  set_window_title("Keppana viimeinen");
+  set_window_title(eichcfg.misc.windowtitle);
+  printf("It is %s\n", eichcfg.misc.windowtitle);
   initxmode ();			// Enter graphic mode.
   windowy1 = BARY;		// Game window y-Size.
   create_pages ();
