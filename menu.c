@@ -66,16 +66,15 @@ void loadconfig (void) {
       if ( rename(fullpath, configbackup) != 0 ) {
         printf("Renaming old config file failed from %s to %s, %s", fullpath, configbackup, strerror(errno));
       };
-    } else {
-      loadhighscore(cfgfile);
+    } else { // config loaded succesfully, close
       fclose(cfgfile);
     }
   } else { // could not get config:
     eichcfg = BeerConfigDefault;
   }
 
-  if ( strcmp(eichcfg.versionstring, "INVALID" ) == 0 ) {
-    printf("no usable config found, reset.\n");
+  if ( strcmp(eichcfg.versionstring, "DEFAULT" ) == 0 ) {
+    printf("no usable config found, reset to default.\n");
   }
 
   key_up = eichcfg.key_up;
@@ -89,7 +88,8 @@ void loadconfig (void) {
   panxplosion(eichcfg.ss.pan_sfx);
   panfoesound(eichcfg.ss.pan_foes);
   sprintf(eichcfg.versionstring, CFG_REVISION);
-  printf("Configuration success (revision %s)\n", eichcfg.versionstring);
+  printf("Configuration success (cfg revision %s)\n", eichcfg.versionstring);
+  loadhighscore();
 }
 
 void saveconfig (void) {
@@ -104,12 +104,10 @@ void saveconfig (void) {
   printf ("Saving config to %s\n", fullpath);
   FILE* cfgfile; 
   if ( cfgfile = fopen(fullpath, "wb") ) {
-
-    // fputs(configidstring, cfgfile);
     fwrite(&eichcfg, sizeof(beerconfig), 1, cfgfile);
-    savehighscore(cfgfile);
     fclose (cfgfile);
   }
+  savehighscore();
 }
 
 static void closingtime (void) {

@@ -336,8 +336,8 @@ void error (char *text, int code, ...);
 void intro (void);
 
 // Functions of module 'hiscore.c'
-void loadhighscore (FILE *filvar);
-void savehighscore (FILE *filvar);
+void loadhighscore ();
+void savehighscore ();
 void highscore (char fullmode);
 
 // Functions of module 'menu.c'

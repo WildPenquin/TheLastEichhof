@@ -43,7 +43,7 @@ static struct beerconfig_s {
   struct graphic_s res;
   struct misc_s misc;
 } BeerConfigDefault = {
-    "INVALID",
+    "DEFAULT",
     KEY_LEFT,
     KEY_RIGHT,
     KEY_UP,

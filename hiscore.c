@@ -92,15 +92,27 @@ static void decodescore (void) {
   }
 }
 
-void loadhighscore (FILE *filvar) {
-  fread(&hstxt, sizeof(struct highscoretext), 1, filvar);
-  decodescore ();
+void loadhighscore () {
+  FILE *filvar = fopen(findbeerfile(BEER_HISCORE), "rb");
+  if ( filvar ) { 
+    fread(&hstxt, sizeof(struct highscoretext), 1, filvar);
+    decodescore ();
+    fclose(filvar);
+  } else {
+    printf("ERROR loading highscore\n");
+  }
 }
 
-void savehighscore (FILE *filvar) {
-  codescore ();
-  fwrite(&hstxt, sizeof(struct highscoretext), 1, filvar);
-  decodescore ();
+void savehighscore () {
+  FILE *filvar = fopen(findbeerfile(BEER_HISCORE), "wb");
+  if ( filvar ) { 
+    codescore ();
+    fwrite(&hstxt, sizeof(struct highscoretext), 1, filvar);
+    decodescore ();
+    fclose(filvar);
+  } else {
+    printf("ERROR saving highscore\n");
+  }
 }
 
 void highscore (char fullmode) {
