@@ -12,6 +12,7 @@
 #include "fileman.h"
 #include "sound.h"
 #include "baller.h"
+#include "beerconfig.h"
 
 
 #define STARTLOGOX		68
@@ -537,9 +538,9 @@ void playthegame (void) {
     last = current;
     clock_gettime(CLOCK_REALTIME, &current);
     if ( stage == 0 )  { begin = current;
-      printf("STARTED: level %i\n");
+      if (eichcfg.misc.speedrun) printf("STARTED: level %i\n");
     } else {
-      printf ("STARTED: level %i, laptime %i:%i \n", stage, 
+      if (eichcfg.misc.speedrun) printf ("STARTED: level %i, laptime %i:%i \n", stage, 
         current.tv_sec-last.tv_sec - 
           ( (current.tv_nsec - last.tv_nsec) < 0 ? 1 : 0 ),
         current.tv_nsec/1000000-last.tv_nsec/1000000 + 
@@ -558,7 +559,7 @@ void playthegame (void) {
       lifes++;
     last = current;
     clock_gettime(CLOCK_REALTIME, &current);
-    if (feedback) { printf ("ENDED: level %i, laptime %i:%i \n", stage, 
+    if (feedback) { if (eichcfg.misc.speedrun) printf ("ENDED: level %i, laptime %i:%i \n", stage, 
         current.tv_sec-last.tv_sec - 
           ( (current.tv_nsec - last.tv_nsec) < 0 ? 1 : 0 ),
         current.tv_nsec/1000000-last.tv_nsec/1000000 + 
@@ -570,7 +571,7 @@ void playthegame (void) {
           // conditionally (if msecond. diff < 0)
           seconds -= mseconds < 0 ? 1 : 0;    //-1 second
           mseconds += mseconds < 0 ? 1000 :0;   //+1000 milliseconds
-          printf("TOTAL TIME: %i:%i.%i  (mm:ss.mso)\n",
+          if (eichcfg.misc.speedrun) printf("TOTAL TIME: %i:%i.%i  (mm:ss.mso)\n",
             (begin.tv_sec-finish.tv_sec)/60,
             seconds,
             mseconds);

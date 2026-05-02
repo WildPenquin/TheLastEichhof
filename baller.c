@@ -216,14 +216,14 @@ void cmdline (int argc, char *argv[]) {
 
   void printhelpstring() {
     printf ("Syntax:           BALLER [options]\n");
-    printf ("  /vga            Override VGA detection.\n");
     printf ("  /ns             Play without sound.\n");
     printf ("  -x 960 -y 660   set window resolution,\n");
     printf ("  -X 3440 -Y 1440 set another resolution,\n");
     printf ("  -r              Reset / auto-detect window resolution.\n");
     printf ("  -R              Reset / auto-detect another resolution.\n");
     printf ("  -s a|i|s        Use aspect (default), integer or stretch scaling.\n");
-    printf ("  -v              Add some verbosity to output.\n");
+    printf ("  -v              Toggle verbosity to STDOUT.\n");
+    printf ("  -l              Toggle speedrunning lap times to STDOUT.\n");
     printf ("\n");
     printf
       ("To force SoundBlaster on, use the BLASTER environment variable.\n");
@@ -240,7 +240,7 @@ void cmdline (int argc, char *argv[]) {
   strupr (cmd);
 
   int c;
-  while ((c = getopt(argc, argv, ":x:y:X:Y:rRfs:iav")) != -1) {
+  while ((c = getopt(argc, argv, ":x:y:X:Y:rRfs:vl")) != -1) {
     switch(c) {
       case 'x':
         eichcfg.res.window.X = atoi(optarg);
@@ -270,7 +270,12 @@ void cmdline (int argc, char *argv[]) {
         else printf("Unknown scaling parameter, ignored (%s)\n", optarg);
         break;
       case 'v':
-        eichcfg.misc.verbose = !eichcfg.misc.verbose;
+        eichcfg.misc.verbose =!eichcfg.misc.verbose;
+        printf("Verbose output toggled: %s\n", eichcfg.misc.speedrun ? "ON " :"OFF");
+        break;
+      case 'l':
+        eichcfg.misc.speedrun=!eichcfg.misc.speedrun;
+        printf("Speedrun output toggled: %s\n", eichcfg.misc.speedrun ? "ON " :"OFF");
         break;
       case '?':
                     fprintf(stderr,
@@ -327,6 +332,7 @@ int main (int argc, char *argv[]) {
 // Process command line.
   cmdline (argc, argv);
 
+  saveconfig();
 // Do initialization.
   powerup ();
 

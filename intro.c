@@ -163,7 +163,6 @@ void intro (void) {
     xoffset = ( introXres - (xoutsize) ) /2;
   };
 
-  printf("Got out coeffs offset %i, size %i, displayaspet %f\n", xoffset, xoutsize, aspect);
   // Initialize sound (volume)
   haltsound ();
 
