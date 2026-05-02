@@ -80,113 +80,168 @@ static void errf (char *text, int code, ...) {
 char beerconfigfile[PATH_MAX] = "0";
 char beerdatafile[PATH_MAX] = "0";
 
+/*////// Structures for finding files ////////////////////////
+/// The main thing is to not hard-code 
+/// any file or directory names (elsewhere) 
+/// in code and minimally here
+/// there is only one function and one only
+/// to get file X - the rest of the code does
+/// not know the platform or where the file actually is
+/// only findbeerfile is exposed to the rest of the code
+///
+/// This is probably way overkill for the purposes of this game
+/// which uses only a few files, but I made this as 
+/// an exercize - one way to try to make (more) portable code
+///////////////////////////////////////////////////////// */
+
+enum beerfiletypes {
+  DATA,         // data for game, only red
+  USERCONFIG,   // user-specific
+  SHARED        // highscore etc., can be shared in multi-juser systems
+};
+
+/*////////////////////////////////////////////////////
+// Fill in according to ./configure and / ot change 
+// these accordingly at run-time and platform
+// search from directories according to beerfiletype
+/////////////////////////////////////////////////// */
+struct searchpaths_s {         
+    //  = DATADIR;
+    char beerdatadir[PATH_MAX];
+    // location of beer executable (depends where installed; might not be ".")
+    char exedir[PATH_MAX];              // TODO: actually find it!
+    // /var... for shared files (highscore) in multi-user systems
+    char localstatedir[PATH_MAX];       
+    // look in XDG_CONFIG_HOME/beer and HOME/.config/beer...
+    char user_beerconfigdir[PATH_MAX];
+}beerpaths;
+
+// File and it's metadata, location
 struct beerfileentry {
   char name[NAME_MAX];
   char path[PATH_MAX];
+  char fullpath[PATH_MAX];
+  enum beerfiletypes type;
 };
 
-
-const char filenames[3][NAME_MAX] = {
-  {"lastbeer.bin"},
-  {"config.bin"},
-  ("highscore.bin")
+// Information about all files - only hardcoded information is here!!
+static struct beerfiles_s {
+  struct beerfileentry data;
+  struct beerfileentry config;
+  struct beerfileentry hiscore;
+} beerfiles = {
+  {"lastbeer.bin", "", "", DATA},
+  {"config.bin",   "", "", USERCONFIG},
+  {"hiscore.bin",  "", "", SHARED}
 };
 
 /*------------------------------------------------------
-Function givebeerfilename
+Function populate_dirs 
 
-Returns the file name of X
-Let's avoid hardcoding filenames in many places
+Pupulate a struct searchpaths; platform-specific things 
+should go here (and hopefully only here)
 ------------------------------------------------------*/
-const char *givebeerfilename (enum beerfile file_entry) {
-  switch (file_entry) {
-  case BEER_DATAFILE:
-    return (&filenames[0][0]);
-    break;
-  case BEER_CONFIG:
-    return (&filenames[1][0]);
-    break;
-  case BEER_HISCORE:
-    return (&filenames[2][0]);
-    break;
+void populate_dirs() {
+  snprintf(beerpaths.beerdatadir, PATH_MAX, "%s/%s", DATADIR, PACKAGE_NAME);
+  sprintf(beerpaths.exedir, ".");
+  snprintf(beerpaths.localstatedir, PATH_MAX, "%s/%s", LOCALSTATEDIR, PACKAGE_NAME);
+
+  if (char *xdgconfhome = getenv ("XDG_CONFIG_HOME")) {
+    snprintf (beerpaths.user_beerconfigdir, PATH_MAX, "%s", xdgconfhome);
+  } else if (char *userhome = getenv ("HOME")) {
+    sprintf (beerpaths.user_beerconfigdir, "%s/%s", userhome, ".config");
+    int mdr = mkdir (beerpaths.user_beerconfigdir, 0777);
+    if (mdr != 0 && errno != EEXIST)
+      printf ("Error creating .config dir: %s\n", strerror (errno));
+  }
+  sprintf (beerpaths.user_beerconfigdir, "%s/%s", beerpaths.user_beerconfigdir, PACKAGE_NAME);
+  int mdr = mkdir (beerpaths.user_beerconfigdir, 0777);   // PACKAGE_NAME = lastbeer (unless changed)
+  if (mdr != 0 && errno != EEXIST) {
+    printf ("Errror creating %s directory: %i: %s\n", beerpaths.user_beerconfigdir, errno,
+        strerror (errno));
+  } 
+  // Make directories if needed and test access
+  // might create ./.config, change this?
+  if ( access( beerpaths.user_beerconfigdir, W_OK | X_OK) != 0 ) {
+    printf("Could not find a writeable config dir (tried %s), using \".\"!\n", beerpaths.user_beerconfigdir);
+    sprintf(beerpaths.user_beerconfigdir, ".");
   }
 }
 
+/*------------------------------------------------------
+Function: finbeerfiles
+
+Find all files (or a location for them) and populate 
+directory for the struct
+------------------------------------------------------*/
+void findbeerfiles() {
+  populate_dirs();
+
+  char *getfullpath(struct beerfileentry beerfile) {
+    char testfile[PATH_MAX];
+    switch(beerfile.type) {
+      case DATA:
+
+        snprintf(testfile, PATH_MAX, "%s/%s", beerpaths.beerdatadir, beerfile.name);
+        if (access(testfile, R_OK) == 0) return beerpaths.beerdatadir;
+
+        if (access(beerfile.name, R_OK) == 0) return ".";
+
+        printf("ERROR: Can not find or access %s!\n", beerfile.name);
+        return ".";
+        break;
+      case USERCONFIG:
+        if (access (beerpaths.user_beerconfigdir, W_OK | R_OK | X_OK ) == 0 ) return beerpaths.user_beerconfigdir;
+        if (access (".", R_OK | W_OK | X_OK) == 0) return ".";
+        printf("ERROR: Can not find writable directory for %s!\n", beerfile.name);
+        return NULL;
+        break;
+      case SHARED:
+        sprintf(testfile, "");
+        if (access (beerpaths.localstatedir, R_OK | X_OK ) == 0 ) {
+          snprintf(testfile, PATH_MAX, "%s/%s", beerpaths.localstatedir, beerfile.name);
+          if (access (testfile, R_OK | W_OK ) == 0 ) {
+            return beerpaths.localstatedir;
+          }
+        }
+        if (access (beerpaths.user_beerconfigdir, W_OK | X_OK | R_OK ) == 0 ) return beerpaths.user_beerconfigdir;
+        if (access (".", R_OK ) == 0) return ".";
+        printf("ERROR: Can not find writable directory for %s!\n", beerfile.name);
+        return NULL;
+        break;
+    }
+  }
+
+  snprintf(beerfiles.data.path, PATH_MAX, "%s", getfullpath(beerfiles.data));
+  snprintf(beerfiles.config.path, PATH_MAX,  "%s", getfullpath(beerfiles.config));
+  snprintf(beerfiles.hiscore.path, PATH_MAX, "%s", getfullpath(beerfiles.hiscore));
+
+  sprintf(beerfiles.data.fullpath, "%s/%s", beerfiles.data.path ,beerfiles.data.name );
+  sprintf(beerfiles.hiscore.fullpath, "%s/%s", beerfiles.hiscore.path ,beerfiles.hiscore.name );
+  sprintf(beerfiles.config.fullpath, "%s/%s", beerfiles.config.path ,beerfiles.config.name );
+  
+  printf("Found files: %s, %s, %s\n", beerfiles.hiscore.fullpath, beerfiles.data.fullpath, beerfiles.config.fullpath);
+
+}
 
 /*------------------------------------------------------
 Function: finbeerfile
 
-Function to return FULL PATH to files
-probably overkill. 
+Function to return FULL PATH to files.
 ------------------------------------------------------*/
-char *findbeerfile (enum beerfile file_entry) {
-  const char *filename = givebeerfilename (file_entry);
+char *findbeerfile(enum beerfile file_entry) {
   switch (file_entry) {
-  case BEER_DATAFILE:		// in DATADIR/PACKAGE_NAME or local dir
-    if (strcmp (beerdatafile, "0") != 0) // alredy found
-      return beerdatafile;
-    const char *datafilename = filename;
-    char fulldatapath[PATH_MAX];
-    // [1] look in DATADIR/PACKAGENAME:
-    sprintf (fulldatapath, "%s/%s/%s", DATADIR, PACKAGE_NAME, datafilename);
-    if (access (fulldatapath, R_OK) == 0) {
-      sprintf (beerdatafile, fulldatapath);
-      // [2] look in CURRENT DIR:
-    } else if (access (datafilename, R_OK) == 0) {
-      sprintf (beerdatafile, datafilename);
-      // [3] bail out, can not continue...
-    } else {
-      printf ("File not found: %s\n", datafilename);
-      return (NULL);
-    }
-    return beerdatafile;
+  case BEER_DATAFILE:
+    return beerfiles.data.fullpath;
     break;
-
-  case BEER_CONFIG:	// Order of search: LOCALSTATEDIR, HOME. current dir
-    if (strcmp (beerconfigfile, "0") != 0) // already found
-      return beerconfigfile;
-    const char *conffilename = filename;
-    char confdir[PATH_MAX];	// directory
-    char fullconfpath[PATH_MAX];	// the actual file
-    //
-    // [1] Let's try global (LOCALSTATEDIR - typically, in /var...)
-    sprintf (fullconfpath, "%s/%s", LOCALSTATEDIR, conffilename);
-    if (access (fullconfpath, W_OK) == 0) {
-      sprintf (beerconfigfile, fullconfpath);
-      return (beerconfigfile);
-    }
-    // [2] Let's try home dir
-    if (char *xdgconfhome = getenv ("XDG_CONFIG_HOME")) {
-      sprintf (confdir, "%s", xdgconfhome);
-    } else if (char *userhome = getenv ("HOME")) {
-      sprintf (confdir, "%s/%s", userhome, ".config");
-    } else {
-      sprintf (confdir, "%s/", ".");
-    }
-    // Make directories if needed and test access
-    // might create ./.config, change this?
-    int mdr = mkdir (confdir, 0777);	// .config
-    if (mdr != 0 && errno != EEXIST)
-      printf ("Error creating .config dir: %s\n", strerror (errno));
-    sprintf (fullconfpath, "%s/%s", confdir, PACKAGE_NAME);
-    mdr = mkdir (fullconfpath, 0777);	// PACKAGE_NAME = lastbeer
-    if (mdr != 0 && errno != EEXIST) {
-      printf ("Errror creating %s directory: %i: %s\n", fullconfpath, errno,
-	      strerror (errno));
-    } else if (access (fullconfpath, W_OK | X_OK) == 0) {
-      sprintf (fullconfpath, "%s/%s", fullconfpath, conffilename);
-      sprintf (beerconfigfile, fullconfpath);
-      return (beerconfigfile);
-    }
-    // [3] Fallback .
-    sprintf (beerconfigfile, "%s/%s", ".", conffilename);
-    return (beerconfigfile);
-
-
+  case BEER_CONFIG:
+    return beerfiles.config.fullpath;
+    break;
+  case BEER_HISCORE:
+    return beerfiles.hiscore.fullpath;
     break;
   }
 }
-
 
 /*------------------------------------------------------
 Function: initfilemanager

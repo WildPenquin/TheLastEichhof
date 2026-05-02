@@ -318,6 +318,8 @@ int main (int argc, char *argv[]) {
   printf ("\nInternet contact address: tritone@ezinfo.vmsmail.ethz.ch\n\n\n");
 #endif
 
+// No point in continuing if can not find files!
+  findbeerfiles();
 
 // Load options of last time.
   loadconfig ();
