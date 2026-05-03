@@ -42,7 +42,6 @@
 #endif
 
 // TODO: use something like json for config instead of binary file...
-// TODO: separate config and highscore file?
 void loadconfig (void) {
 
   char *fullpath = findbeerfile (BEER_CONFIG);
@@ -664,6 +663,7 @@ void menu (void) {
     }
     if (key[KEY_2] || (selected == 2 && key[key_fire])) {	// Show Highscore
       endmenu (snd, pointobj, pointspr, menuspr);
+      clearscreen();
       highscore (FALSE);
       selected = initmenu (&snd, &pointobj, &pointspr, &menuspr);
     }
