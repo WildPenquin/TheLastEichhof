@@ -298,6 +298,7 @@ _ext unsigned long score;	// Player's score after Level.
 _ext unsigned long scoreold;	// Player's score before Level.
 
 _ext int cheatlevel;		// flag of Cheatmode.
+_ext int cheatstage;        // starting level (cheat).
 
 _ext int shipspeed;		// Speed of ship in pixels per frame.
 _ext int lifes;

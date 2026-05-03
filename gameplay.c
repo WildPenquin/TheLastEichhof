@@ -222,7 +222,7 @@ static void newgame (void) {
   money = 0;
   shipspeed = STARTSHIPSPEED;
   lifes = STARLIFES;
-  stage = 0;
+  stage = cheatstage;
 
 // Main weapon definition.
   nweapons = 1;			// First we have 1 weapon.
@@ -533,6 +533,9 @@ void playthegame (void) {
 
   clock_gettime(CLOCK_REALTIME, &current);
 
+  if ( stage > 0 ) { // we are cheating
+    weaponmanager();
+  }
   do {
     initlevel (stage);
     last = current;

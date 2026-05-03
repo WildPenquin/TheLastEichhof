@@ -306,6 +306,17 @@ void cmdline (int argc, char *argv[]) {
     printf ("\n");
   }
 
+  if ((e1 = strstr (cmd, "42069.")) == NULL) {
+    cheatstage = 0; // start at the default level
+  } else {
+    cheatstage = e1[6] - '0'; //
+    if (!(cheatstage ^ 4)) cheatstage = 4;
+    else if (!(cheatstage ^ 3)) cheatstage = 3;
+    else if (!(cheatstage ^ 2)) cheatstage = 2;
+    else if (!(cheatstage ^ 1)) cheatstage = 1;
+    else cheatstage = 0;
+    printf ("Cheat - will start at level: %i\n", cheatstage);
+  }
   printf ("Starting version %s\n", VERSION);
 
 }
