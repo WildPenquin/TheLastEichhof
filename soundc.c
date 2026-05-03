@@ -18,7 +18,8 @@ bool speaker (int state) {
   return eichcfg.ss.sound;
 }
 
-/*pan settings for explosions and foe sounds
+/*pan settings for explosions and foe sounds 
+ (currently not settable separately, but could be)
  * state == 0   : Turn to mono
  * state == 1   : Turn to stereo (panning according to location)
  * state == -1  : Query state */
@@ -66,6 +67,28 @@ int playsample_pan (SAMPLE *s, int pan, bool loop) {
   return spl;
 }
 
+// almost same as playsample_pan, but let's not release voice and add it panningsounds
+int playsample_tracking(struct playingvoicestrc *current, SAMPLE *s, bool loop, int init_pan, int *locT) {
+  int spl = allocate_voice(s);
+  if (loop)
+    voice_set_playmode (spl, PLAYMODE_LOOP);
+  voice_set_pan (spl, init_pan);
+  voice_start (spl);
+  if ( panfoesound ) add_panningsound(current, spl, locT);
+  return spl;
+}
+
+int add_panningsound(struct playingvoicestrc *current, int playing, int *locT) {
+  current->playing=playing;
+  current->pancount=0;
+  //// For an array / custom panning sound (TODO)
+  // for (int p=0; p<30;p++) {
+  //   current->paninst[p]=(p/10)%2;
+  // }
+  current->pantype=TRACKING;
+  current->locT = locT;
+  return 0;
+}
 
 int playsample (SAMPLE *s) {
   return playsample_pan (s, 127, false);

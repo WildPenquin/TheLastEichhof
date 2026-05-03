@@ -3,6 +3,8 @@
 #include "baller.h"
 #include "xmode.h"
 #include "sound.h"
+#include "beerconfig.h"
+#include <stdio.h>
 
 void dispscore (void);
 
@@ -31,6 +33,8 @@ short scorepos;			/* Current x position. */
 int playscore;			/* Remaining score. */
 
 short const10d;			/* Faster Division. */
+
+static int pantrack_sndi= 0; // index of tracked sound sources
 
 /* Function to access field in starstrc array. */
 int starstrc_member (starstrc_ptr data, int i, int member) {
@@ -479,7 +483,9 @@ void a_foe (void) {
 	case FOESOUND:
 	  int pan =
 	    127 + panxplosion (-1) * (_obj[ptr->object].xa * 255 / 320 - 127);
-	  playsample_pan (ptrindex[lsndofs + ptr->cpath[1]], pan, false);
+      if ( playingvoices[pantrack_sndi].playing > -1 ) pantrack_sndi++;
+      if (pantrack_sndi > 16) pantrack_sndi = 0; // loop if all sound "slots" have been already tracked
+      playsample_tracking(&playingvoices[pantrack_sndi], ptrindex[lsndofs + ptr->cpath[1]], false, pan, &_obj[ptr->object].xa);
 	  ptr->cpath += 2;
 	  goto nextcoord;
 	}
@@ -808,8 +814,9 @@ void settick (void) {
 }
 
 END_OF_FUNCTION (settick)
+
 /* set a starting position of a level. */
-     void setplayposition (short nattacks, struct attackstrc *attack,
+void setplayposition (short nattacks, struct attackstrc *attack,
 			   short nbigb) {
   lastposition.nattacks = nattacks;
   lastposition.attack = attack;
@@ -824,6 +831,8 @@ int play () {
 
   short count;
   struct attackstrc *attack;
+  pantrack_sndi=0;
+  add_panningsound(&playingvoices[pantrack_sndi], -1, NULL);
 
   score = lastposition.score;
   nbigboss = lastposition.nbigboss;
@@ -840,13 +849,14 @@ int play () {
   updates_due = 0;
   subtick = 0;
 
+  char panvoicestatus[120] = "NONE";
   do {
   next_attack:
     if (nattacks != 0 && count == attack->count) {
       if (((unsigned short) attack->foe & 0xfff0) != A_COMMAND) {
 	deffoe (attack->foe, attack->x, attack->y, 0, 0);
 	nattacks--;
-	attack++;
+	attack++;  
 	goto next_attack;
       } else
 	switch ((unsigned short) attack->foe) {
@@ -859,7 +869,7 @@ int play () {
 	  attack++;
 	  goto next_attack;
 	case A_SOUND:
-	  playsample (ptrindex[lsndofs + attack->x]);
+	  playsample (ptrindex[lsndofs + attack->x]);// Test these with sinusoidal panning
 	  attack++;
 	  goto next_attack;
 	case A_MARK:
@@ -879,6 +889,36 @@ int play () {
       lifes = -1;		/* Request game abort. */
       break;
     }
+
+
+    if ( eichcfg.misc.verbose) printf("\rF%i", count);
+    // does not work always ... TODO improve a bit. Probably always works since there are only a few foes at the same time ever in the game producing sound
+    for (int ptdi = 0; ptdi <= pantrack_sndi; ptdi++ ) { 
+      if ( playingvoices[pantrack_sndi].playing > -1 ) { // && voice_get_position(playingvoices[0]->playing) > -1 ) { //  && voice_get_position(0) > -1 ) {
+        if ( voice_get_position(playingvoices[ptdi].playing) > -1 ) {
+	      int pan =
+	        127 + panxplosion (-1) * ( *playingvoices[pantrack_sndi] . locT * 255 / 320 - 127);
+          if ( eichcfg.misc.verbose) {
+            sprintf(panvoicestatus, 
+                "--------------------------------------------------------------------------------");
+            char ptdic[3];
+            sprintf(ptdic, "%X", ptdi%16);
+            strncpy(&panvoicestatus[pan * 80 / 255], ptdic, 1);
+            sprintf(panvoicestatus, "PF %i: %s LOC:%i", pan, panvoicestatus,  *playingvoices[ptdi].locT);
+          }
+          voice_set_pan(playingvoices[ptdi] . playing, pan);
+        } else { // done with a panning sound ? 
+          release_voice (playingvoices[pantrack_sndi].playing);
+          playingvoices[pantrack_sndi].playing=-1;
+          if (ptdi == pantrack_sndi) {
+            pantrack_sndi--;
+            if (pantrack_sndi < 0 ) pantrack_sndi = 0;
+          }
+        }
+      }
+    }
+    if (eichcfg.misc.verbose) printf("PF %s", panvoicestatus);
+    fflush(stdout);
 
     do {
       waitforsubtick ();
