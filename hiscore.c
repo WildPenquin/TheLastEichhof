@@ -216,6 +216,7 @@ void highscore (char fullmode) {
       strcpy (hstxt.player[currentpl].name, "TOO DRUNK");
       writetext (x, YOFFS + currentpl * 14, hstxt.player[currentpl].name,
 		 font);
+      showpage(page);
     }
 
     // Winnertext
