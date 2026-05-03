@@ -68,17 +68,17 @@ int playsample_pan (SAMPLE *s, int pan, bool loop) {
 }
 
 // almost same as playsample_pan, but let's not release voice and add it panningsounds
-int playsample_tracking(struct playingvoicestrc *current, SAMPLE *s, bool loop, int init_pan, int *locT) {
+int playsample_tracking(struct playingvoicestrc *current, SAMPLE *s, bool loop, int init_pan, int *locT, int sizeT) {
   int spl = allocate_voice(s);
   if (loop)
     voice_set_playmode (spl, PLAYMODE_LOOP);
   voice_set_pan (spl, init_pan);
   voice_start (spl);
-  if ( panfoesound ) add_panningsound(current, spl, locT);
+  if ( panfoesound ) add_panningsound(current, spl, locT, sizeT);
   return spl;
 }
 
-int add_panningsound(struct playingvoicestrc *current, int playing, int *locT) {
+int add_panningsound(struct playingvoicestrc *current, int playing, int *locT, int sizeT) {
   current->playing=playing;
   current->pancount=0;
   //// For an array / custom panning sound (TODO)
@@ -87,6 +87,7 @@ int add_panningsound(struct playingvoicestrc *current, int playing, int *locT) {
   // }
   current->pantype=TRACKING;
   current->locT = locT;
+  current->sizeT = sizeT;
   return 0;
 }
 

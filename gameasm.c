@@ -482,10 +482,11 @@ void a_foe (void) {
 	  goto nextcoord;
 	case FOESOUND:
 	  int pan =
-	    127 + panxplosion (-1) * (_obj[ptr->object].xa * 255 / 320 - 127);
+	    127 + panxplosion (-1) * (_obj[ptr->object].xa + _obj[ptr->object].xs / 2 * 255 / 320 - 127);
       if ( playingvoices[pantrack_sndi].playing > -1 ) pantrack_sndi++;
-      if (pantrack_sndi > 16) pantrack_sndi = 0; // loop if all sound "slots" have been already tracked
-      playsample_tracking(&playingvoices[pantrack_sndi], ptrindex[lsndofs + ptr->cpath[1]], false, pan, &_obj[ptr->object].xa);
+      if (pantrack_sndi > 15) pantrack_sndi = 0; // loop if all sound "slots" have been already tracked
+      playsample_tracking(&playingvoices[pantrack_sndi], ptrindex[lsndofs + ptr->cpath[1]], false, pan, &_obj[ptr->object].xa, _obj[ptr->object].xs);
+
 	  ptr->cpath += 2;
 	  goto nextcoord;
 	}
@@ -831,8 +832,11 @@ int play () {
 
   short count;
   struct attackstrc *attack;
+  // initialize and clear the playingvoices
+  for (pantrack_sndi=0; pantrack_sndi<16;pantrack_sndi++) {
+    add_panningsound(&playingvoices[pantrack_sndi], -1, NULL, 0);
+  }
   pantrack_sndi=0;
-  add_panningsound(&playingvoices[pantrack_sndi], -1, NULL);
 
   score = lastposition.score;
   nbigboss = lastposition.nbigboss;
@@ -849,7 +853,7 @@ int play () {
   updates_due = 0;
   subtick = 0;
 
-  char panvoicestatus[120] = "NONE";
+  char panvoicestatus[82] = "NONE";
   do {
   next_attack:
     if (nattacks != 0 && count == attack->count) {
@@ -891,25 +895,38 @@ int play () {
     }
 
 
-    if ( eichcfg.misc.verbose) printf("\rF%i", count);
-    // does not work always ... TODO improve a bit. Probably always works since there are only a few foes at the same time ever in the game producing sound
-    for (int ptdi = 0; ptdi <= pantrack_sndi; ptdi++ ) { 
-      if ( playingvoices[pantrack_sndi].playing > -1 ) { // && voice_get_position(playingvoices[0]->playing) > -1 ) { //  && voice_get_position(0) > -1 ) {
+    if ( eichcfg.misc.verbose) { 
+      printf("\rF%i", count);
+      sprintf(panvoicestatus, 
+        "--------------------------------------------------------------------------------");
+    }
+    char panvoicest_pre[20] = "PAN ";
+    char panvoicest_post[20] = "LOC ";
+    int nvs = 3;
+    for (int ptdi = pantrack_sndi; ptdi >= 0; ptdi-- ) {
+      if ( playingvoices[ptdi].playing > -1 ) { // && voice_get_position(playingvoices[0]->playing) > -1 ) { //  && voice_get_position(0) > -1 ) {
         if ( voice_get_position(playingvoices[ptdi].playing) > -1 ) {
-	      int pan =
-	        127 + panxplosion (-1) * ( *playingvoices[pantrack_sndi] . locT * 255 / 320 - 127);
+	      float pan =
+	        127 + panxplosion (-1) * (
+                ( *playingvoices[ptdi] . locT + ( playingvoices[ptdi] . sizeT / 2 ) ) // center
+                * (float) 255 / 320
+                - 127
+              )
+            ;
           if ( eichcfg.misc.verbose) {
-            sprintf(panvoicestatus, 
-                "--------------------------------------------------------------------------------");
-            char ptdic[3];
-            sprintf(ptdic, "%X", ptdi%16);
-            strncpy(&panvoicestatus[pan * 80 / 255], ptdic, 1);
-            sprintf(panvoicestatus, "PF %i: %s LOC:%i", pan, panvoicestatus,  *playingvoices[ptdi].locT);
+            char ptdic[20];
+            sprintf(ptdic, "%X", ptdi%16); // printf("W");
+            strncpy(&panvoicestatus[(int) pan * 80 / 255], ptdic, 1);
+            snprintf(ptdic, 20, "%3i:", (int) pan);
+            strcat(panvoicest_pre, ptdic);
+            snprintf(ptdic, 20, "%3i.%3i ; ", *playingvoices[ptdi].locT, playingvoices[ptdi].sizeT );
+            strcat(panvoicest_post, ptdic);
+            nvs--;
           }
-          voice_set_pan(playingvoices[ptdi] . playing, pan);
+          voice_set_pan(playingvoices[ptdi] . playing, (int) pan);
         } else { // done with a panning sound ? 
-          release_voice (playingvoices[pantrack_sndi].playing);
-          playingvoices[pantrack_sndi].playing=-1;
+          release_voice (playingvoices[ptdi].playing);
+          playingvoices[ptdi].playing=-1;
           if (ptdi == pantrack_sndi) {
             pantrack_sndi--;
             if (pantrack_sndi < 0 ) pantrack_sndi = 0;
@@ -917,7 +934,18 @@ int play () {
         }
       }
     }
-    if (eichcfg.misc.verbose) printf("PF %s", panvoicestatus);
+    if (eichcfg.misc.verbose) { // Just some prettier formatting
+      while ( nvs > 0 ) {
+      char ptdic[20];
+        snprintf(ptdic, 20, "%3i:", (int) 0);
+        snprintf(ptdic, 20, "%3i:", (int) 0);
+        strcat(panvoicest_pre, ptdic);
+        snprintf(ptdic, 20, "%3i.%3i ; ", 0, 0);
+        strcat(panvoicest_post, ptdic);
+        nvs--;
+      }
+    }
+    if (eichcfg.misc.verbose) printf("PF %s %s %s - ptdi %i\n", panvoicest_pre, panvoicestatus, panvoicest_post, pantrack_sndi);
     fflush(stdout);
 
     do {

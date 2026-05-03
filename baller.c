@@ -272,7 +272,7 @@ void cmdline (int argc, char *argv[]) {
         break;
       case 'v':
         eichcfg.misc.verbose =!eichcfg.misc.verbose;
-        printf("Verbose output toggled: %s\n", eichcfg.misc.speedrun ? "ON " :"OFF");
+        printf("Verbose output toggled: %s\n", eichcfg.misc.verbose ? "ON " :"OFF");
         break;
       case 'l':
         eichcfg.misc.speedrun=!eichcfg.misc.speedrun;
