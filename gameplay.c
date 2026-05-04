@@ -526,29 +526,71 @@ void playthegame (void) {
   int feedback;
 
   newgame ();
-  struct timespec begin;
-  struct timespec last;
-  struct timespec current;
-  struct timespec finish;
 
-  clock_gettime(CLOCK_REALTIME, &current);
+  // Stuff for speedrunning / tracking time:
+
+  // Add or substract timespecs:
+  struct timespec tppm (struct timespec from, struct timespec to, bool add) {
+    struct timespec delta;
+    delta.tv_sec = from.tv_sec - ( (add ? -1 : 1 ) *
+      ( to.tv_sec +
+        ( (from.tv_nsec - to.tv_nsec) < 0 ? 1 : 0 )
+      ) )
+    ;
+    delta.tv_nsec = from.tv_nsec - ( (add ? -1 : 1 ) *
+      ( to.tv_nsec -
+        ( (from.tv_nsec - to.tv_nsec) < 0 ? 1000000000 : 0 )
+      ) )
+    ;
+    return delta;
+  }
+
+  // Just a few shorthands:
+  struct timespec delta (struct timespec from, struct timespec to) {
+    return tppm(from, to, false);
+  };
+
+  struct timespec tpadd (struct timespec from, struct timespec to) {
+    return tppm(from, to, true);
+  };
+
+  // timespec with 0's
+  struct timespec nulltime() {
+    struct timespec nulltime;
+    nulltime.tv_sec = nulltime.tv_nsec = 0;
+    return nulltime;
+  }
+
+  // timespecs for tracking the time:
+  struct timespec begin = nulltime();
+  struct timespec previous; // either level end or shop exit
+  struct timespec current;
+
+  // Time in shops:
+  struct timespec shoptime;
+  struct timespec shoptime_total = nulltime();
 
   if ( stage > 0 ) { // we are cheating
     weaponmanager();
   }
   do {
     initlevel (stage);
-    last = current;
-    clock_gettime(CLOCK_REALTIME, &current);
-    if ( stage == 0 )  { begin = current;
-      if (eichcfg.misc.speedrun) printf("STARTED: level %i\n");
+    if ( stage == cheatstage ) { // start!
+      clock_gettime(CLOCK_REALTIME, &current);
+      begin = current;
+      if (eichcfg.misc.speedrun) printf("STARTED: level %i\n", stage);
     } else {
-      if (eichcfg.misc.speedrun) printf ("STARTED: level %i, laptime %i:%i \n", stage, 
-        current.tv_sec-last.tv_sec - 
-          ( (current.tv_nsec - last.tv_nsec) < 0 ? 1 : 0 ),
-        current.tv_nsec/1000000-last.tv_nsec/1000000 + 
-          ( (current.tv_nsec - last.tv_nsec) < 0 ? 1000 : 0 ) );
+      previous = current;  // shop exit
+      clock_gettime(CLOCK_REALTIME, &current);
+      struct timespec shoptime = delta(current, previous);
+      if (eichcfg.misc.speedrun) 
+        printf ("STARTED: level %i, (shop)laptime  %2i:%2i.%3i \n", stage,
+        shoptime.tv_sec/60,
+        shoptime.tv_sec%60,
+        shoptime.tv_nsec/1000000);
+      shoptime_total = tpadd(shoptime, shoptime_total);
     }
+
     setplayposition (level.nattacks, level.attack, level.descript->nbigboss);
 
     do {
@@ -560,28 +602,39 @@ void playthegame (void) {
     } while (!feedback && (lifes > 0));
     if (!(cheatlevel & CHEATLIFES))
       lifes++;
-    last = current;
-    clock_gettime(CLOCK_REALTIME, &current);
-    if (feedback) { if (eichcfg.misc.speedrun) printf ("ENDED: level %i, laptime %i:%i \n", stage, 
-        current.tv_sec-last.tv_sec - 
-          ( (current.tv_nsec - last.tv_nsec) < 0 ? 1 : 0 ),
-        current.tv_nsec/1000000-last.tv_nsec/1000000 + 
-          ( (current.tv_nsec - last.tv_nsec) < 0 ? 1000 : 0 ) );
-        if ( stage == 5 ) { 
-          finish = current;
-          int mseconds = begin.tv_nsec/1000000-last.tv_nsec/1000000;
-          int seconds = (begin.tv_sec-finish.tv_sec)%60;
-          // conditionally (if msecond. diff < 0)
-          seconds -= mseconds < 0 ? 1 : 0;    //-1 second
-          mseconds += mseconds < 0 ? 1000 :0;   //+1000 milliseconds
-          if (eichcfg.misc.speedrun) printf("TOTAL TIME: %i:%i.%i  (mm:ss.mso)\n",
-            (begin.tv_sec-finish.tv_sec)/60,
-            seconds,
-            mseconds);
-        }
+    if ( feedback && eichcfg.misc.speedrun ) {
+      previous = current; // level end
+      clock_gettime(CLOCK_REALTIME, &current);
+      struct timespec leveltime = delta(current, previous);
+      if (eichcfg.misc.speedrun) 
+        printf ("ENDED: level %i, (level)laptime   %2i:%2i.%3i \n", stage,
+        leveltime.tv_sec/60,
+        leveltime.tv_sec%60,
+        leveltime.tv_nsec/1000000);
     }
+
     shutlevel ();
     stage++;
+
+    if ( feedback && stage == LEVELS && eichcfg.misc.speedrun ) { // RUN END
+      struct timespec totaltime = delta(current, begin);
+      struct timespec totalleveltime = delta(totaltime, shoptime_total);
+      printf("TOTAL TIME:                        %2i:%2i.%3i\n",
+        totaltime.tv_sec/60,
+        totaltime.tv_sec%60,
+        totaltime.tv_nsec / 1000000
+      );
+      printf("Total time IN SHOPS:               %2i:%2i.%3i\n",
+        shoptime_total.tv_sec/60,
+        shoptime_total.tv_sec%60,
+        shoptime_total.tv_nsec / 1000000
+      );
+      printf("Total time IN LEVELS:              %2i:%2i.%3i\n",
+        totalleveltime.tv_sec/60,
+        totalleveltime.tv_sec%60,
+        totalleveltime.tv_nsec / 1000000
+      );
+    }
     if (!feedback || (stage == LEVELS))
       break;
     weaponmanager ();
