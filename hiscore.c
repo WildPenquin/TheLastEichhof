@@ -23,6 +23,8 @@ struct playerdatas {
   char name[NOCP + 1];
 };
 
+#define HS_REVISION PACKAGE_NAME"211      " // change if hs file structure changed!
+
 struct highscoretext {
   struct playerdatas player[MAXENTRIES];
   char winnertext[NOCW + 1];
@@ -94,12 +96,25 @@ static void decodescore (void) {
 
 void loadhighscore () {
   FILE *filvar = fopen(findbeerfile(BEER_HISCORE), "rb");
-  if ( filvar ) { 
-    fread(&hstxt, sizeof(struct highscoretext), 1, filvar);
-    decodescore ();
+  char revread[sizeof(HS_REVISION)] = "NONE";
+  if ( filvar ) {
+    size_t hsrevstrres = fread(&revread, sizeof(HS_REVISION), 1, filvar);
+    if ( hsrevstrres != 1 || strcmp(revread, HS_REVISION ) != 0  ) {
+      printf("INVALID highscore file.\n");
+      fclose(filvar);
+      return;
+    }
+    struct highscoretext hskeep = hstxt;
+    size_t hsreadresult = fread(&hstxt, sizeof(struct highscoretext), 1, filvar);
+    if ( hsreadresult != 1 ) {
+      printf("Error reading highscores!\n", hsreadresult);
+      hstxt = hskeep;
+    } else {
+      decodescore ();
+    }
     fclose(filvar);
   } else {
-    printf("ERROR loading highscore\n");
+    printf("ERROR opening highscore file\n");
   }
 }
 
@@ -107,6 +122,7 @@ void savehighscore () {
   FILE *filvar = fopen(findbeerfile(BEER_HISCORE), "wb");
   if ( filvar ) { 
     codescore ();
+    fwrite(HS_REVISION, sizeof(HS_REVISION), 1, filvar);
     fwrite(&hstxt, sizeof(struct highscoretext), 1, filvar);
     decodescore ();
     fclose(filvar);
