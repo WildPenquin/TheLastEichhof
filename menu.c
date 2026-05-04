@@ -644,9 +644,7 @@ void menu (void) {
   do {
     clear_keybuf ();
     if (key[KEY_ALT] && key[KEY_ENTER]) {
-      endmenu (snd, pointobj, pointspr, menuspr);
       toggle_fullscreen ();
-      selected = initmenu (&snd, &pointobj, &pointspr, &menuspr);
       saveconfig ();
     }
     while (!keypressed ()) {
