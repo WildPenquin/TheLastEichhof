@@ -57,6 +57,7 @@
 #define SELLYEXIT		25
 #define NOE			4
 
+static void givemoneyback(int selected, struct sprstrc *f , bool used);
 
 int max (int a, int b) {
   if (a >= b)
@@ -224,12 +225,16 @@ static void placeweapon (int n) {
   killallobjects ();
   killallbuddies ();
 
+  bool placed = false;
   if (abortkey == KEYSPACE) {
     weaponlst[nweapons].dx = x - (short int) xy;
     weaponlst[nweapons].dy = y - (short int) (xy >> 16);
     weaponlst[nweapons].arm = weapon.arm[n];
     nweapons++;
+    placed = true;
   }
+  if (!placed) givemoneyback(n, font, false);
+
   glowout ();
 }
 
@@ -243,11 +248,11 @@ static void payforweapon (int selected, struct sprstrc *f) {
     }
 }
 
-static void givemoneyback (int selected, struct sprstrc *f) {
+static void givemoneyback (int selected, struct sprstrc *f, bool used) {
   int i;
 
-  for (i = money; money < (i + (weapon.arm[selected].cost * 3) / 4); money++) {
-    writenumber (XMAX - (f->xs), SHOPTEXT, money + 1, f);
+  for (i = money; money < (i + (weapon.arm[selected].cost * ( used ? 3 : 4 ) ) / 4); money++) {
+    if (used) writenumber (XMAX - (f->xs), SHOPTEXT, money + 1, f);
     showpage (page);
   }
 }
@@ -413,7 +418,7 @@ Description: User may abandon one or more of his weapons.
     } while (!key[key_fire]);
 
     if (selected != 0) {
-      givemoneyback (selected, font);
+      givemoneyback (selected, font, true);
       abandonobject (weaponlst[selected].object);
       nweapons--;		// Kill selected weapon from list.
       for (i = selected; i < nweapons; i++) {
