@@ -149,17 +149,19 @@ void populate_dirs() {
   if (char *xdgconfhome = getenv ("XDG_CONFIG_HOME")) {
     snprintf (beerpaths.user_beerconfigdir, PATH_MAX, "%s", xdgconfhome);
   } else if (char *userhome = getenv ("HOME")) {
-    sprintf (beerpaths.user_beerconfigdir, "%s/%s", userhome, ".config");
+    snprintf (beerpaths.user_beerconfigdir, PATH_MAX, "%s/%s", userhome, ".config");
     int mdr = mkdir (beerpaths.user_beerconfigdir, 0777);
     if (mdr != 0 && errno != EEXIST)
       printf ("Error creating .config dir: %s\n", strerror (errno));
   }
-  sprintf (beerpaths.user_beerconfigdir, "%s/%s", beerpaths.user_beerconfigdir, PACKAGE_NAME);
+  // snprintf (beerpaths.user_beerconfigdir, PATH_MAX, "%s/%s", beerpaths.user_beerconfigdir, PACKAGE_NAME);
+  strcat(beerpaths.user_beerconfigdir, "/");
+  strcat(beerpaths.user_beerconfigdir, PACKAGE_NAME);
   int mdr = mkdir (beerpaths.user_beerconfigdir, 0777);   // PACKAGE_NAME = lastbeer (unless changed)
   if (mdr != 0 && errno != EEXIST) {
     printf ("Errror creating %s directory: %i: %s\n", beerpaths.user_beerconfigdir, errno,
         strerror (errno));
-  } 
+  }
   // Make directories if needed and test access
   // might create ./.config, change this?
   if ( access( beerpaths.user_beerconfigdir, W_OK | X_OK) != 0 ) {
