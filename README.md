@@ -1,30 +1,53 @@
 
-                     T H E   L A S T   E I C H H O F           
+# THE LAST EICHHOF           
 
 Original version Alpha-Helix 1993.
 Ported to Allegro library Gavin Smith 2014.
 
 This repo is forked from loonycyborg's repo and minor fixes by WildPenguin 2026.
 
-INSTALLATION
+## INSTALLATION
 
-On a Unix-like system, run ./configure followed by make install.High score and
-config will be put in user home directory (according to XDG_CONFIG_HOME or 
-HOME variables, most probably in $HOME/.config/lastbeer).
+On a Unix-like system, run ./configure followed by make install. High score and
+config will be put in user home directory (according to `XDG_CONFIG_HOME` or 
+`HOME` variables, most probably in $HOME/.config/lastbeer).
 
-If you want a global configuration and high score file, comment out the relevant
+If you want a global high score file, comment out the relevant
 line in Makefile.am.
 
 You need Allegro 4, on Debian derivatives it comes as liballegro4-dev.
 
-There isn't a lot of configuration but you may try -x NUM -y NUM and 
--X NUM -Y NUM parameters to set one and the other resolution, respectively =).
+There isn't a lot of configuration but you may try `-x NUM` `-y NUM` and 
+`-X NUM` `-Y NUM` parameters to set one and the other resolution, respectively =).
+The game wil try to autodetect two sensible resolutions based on your desktop 
+resolution on the first run.
+
 The resolution(s) will be saved so you don't need to specify resolutions every time.
 (you need to toggle with ALT+ENTER or set something in options to trigger save).
 
-A BIT ABOUT THE LAST EICHHOF 
+Some command line options will toggle settings (and they are saved in the configuratio
+file). This is a bit weird and all but POSIX. I am being a bit lazy. This is subject to
+change =)
 
-The game uses 320 x 240 (kind of), but the intro uses 640 x 350. 
+## COMMAND LINE OPTIONS
+
+Run with `./beer -?` to check these at any time.
+
+```
+Syntax:           BALLER [options]
+  /ns             Play without sound.
+  -x 960 -y 660   set window resolution,
+  -X 3440 -Y 1440 set another resolution,
+  -r              Reset / auto-detect window resolution.
+  -R              Reset / auto-detect another resolution.
+  -s a|i|s        Use aspect (default), integer or stretch scaling.
+  -v              Toggle verbosity to STDOUT.
+  -l              Toggle speedrunning lap times to STDOUT.
+```
+
+## A BIT ABOUT THE LAST EICHHOF 
+
+The game uses 320 x 240 (kind of), but the intro uses 640 x 350.
 These are both old VGA/EGA resolutions. 640 x 350 didn't have a square PAR 
 originally. Actually, the game uses some weird  slightly-less-tall than 240 
 resolution (320 x 220), which was commonplace with other DOS games, too (so, 
@@ -48,7 +71,7 @@ set a resolution of 320 x 220 (or whatever you like) and use gamescope. However
 gamescope causes some very minor glitches with some timing (mainly effects the
 shop money decrement animation, I haven't noticed in-game effects).
 
-KNOWN ISSUES
+## KNOWN ISSUES
 
 This game uses Allegro 4. That library is ancient and unmaintained (Allegro5 is 
 active).
@@ -86,10 +109,11 @@ C source code for Allegro port copyright 2014 by Gavin Smith and licensed
 under the GNU General Public License version 3.  See the file LICENSE.GPL
 included with the program.
 
-=============================================================================
+-----------------------------------------------------------------------------
 
-WEAPONS
+## WEAPONS
 
+```
 NAME
 PRICE
 ENERGIZATION PERIOD / POWER
@@ -129,21 +153,24 @@ POKAL           4.00    20 / 6
 	Explode into 4 smaller shots
 XENON 2 CANNON  5.40    8 / 6
 	Single powerful missile
+```
 
-=============================================================================
+-----------------------------------------------------------------------------
 
-LEVELS
+## LEVELS
 
-0 Easy Start
-1 Feldschloesschen
-	Soon after defeating the blimp miniboss, there will be a big blue crate
+### 0 Easy Start
+
+### 1 Feldschloesschen
+
+Soon after defeating the blimp miniboss, there will be a big blue crate
 that throws out exploding bottles.  Watch out for the brown shards, and turn up
 the brightness of your monitor if necessary.  When the crate rises from the
 bottom of the screen, stay away from the bottom of the screen where the green
 bottles will rush in, watching out for the looping bottle on the left and its
 homing shot.  The centre left is a good place to be.
 
-	The two end bosses are quite hard.  When there are two crates on either
+The two end bosses are quite hard.  When there are two crates on either
 side throwing out exploding bottles, try to stay close to the blue crates,
 dodge down for each shard and get back up as soon as possible.	Once you have
 destroyed one of the crates, take a path to the other side in the upper half of
@@ -154,47 +181,54 @@ selected the Pony weapon and to shoot the exploding bottles with Eichhof while
 shooting the crates with the Pony.  If all else fails, try to stay alive long
 enough for the final boss to appear.  When you die again, you will skip
 straight to the final boss.
-	Destroy one of the small blue crates first, then move to the other
+
+Destroy one of the small blue crates first, then move to the other
 side.  Watch out for the large, slow round white missiles that are aimed at
 you.  You should try either to be high up at the sides or near the bottom
 at centre when they are released, but avoid the corners.
 
 
-2 Weissbier
-	When going past the exploding barrels, try to remember which ones you
+### 2 Weissbier
+When going past the exploding barrels, try to remember which ones you
 have shot the most to anticipate which will explode first.
-	For final boss, start at the bottom right of the screen. Then move to
+
+For final boss, start at the bottom right of the screen. Then move to
 the top right and let the row of beers shoot underneath you.  Then back to the
 bottom right.  Circle round the boss to the bottom left, avoiding the arc of
 small bottles it shoots out.
 
-3 No More Cocktails
-	For the final three bosses, circle around whichever one is on the
+### 3 No More Cocktails
+
+For the final three bosses, circle around whichever one is on the
 bottom right.
 
-4 The Morning After
-	Spend any left-over money on extra lives.
-	The part where two toilets appear at the bottom left and spit out
+### 4 The Morning After
+
+Spend any left-over money on extra lives.
+
+The part where two toilets appear at the bottom left and spit out
 bottles is very hard.  There will be two runs of green bottles.  The first
 will go up slightly before reaching the right of the screen and the second
 will go up along the right edge before circling round the top.  Position
 yourself in between them.
-	When navigating the field of flying toasters, don't fire your weapons.
+
+When navigating the field of flying toasters, don't fire your weapons.
 This will avoid the counter-shots when each toaster is destroyed.  After that,
 watch out for the two shots spat high out the top of the small pink cup.
 This cup takes a lot of damage but is easy to ignore.  You can sometimes duck
 between the cup and its shots.  It will go off screen
 by itself eventually.
-	Immediately after there are three exploding apple cores coming at you,
+
+Immediately after there are three exploding apple cores coming at you,
 wait for the alarm clocks to appear at the right side of the screen.  Then
 position yourself under the bottom one.  This should allow you to destroy them
 quickly and avoid their shots.
-The bottom
-right of the screen is a good place to be for the second phase of the final
-boss to dodge targeted shots and destroy the spawned alarm clocks.
+
+The bottom right of the screen is a good place to be for the second phase of 
+the final boss to dodge targeted shots and destroy the spawned alarm clocks.
 
 
-General advice:
+## General advice:
 
 If you cannot catch an enemy up because they are moving the same speed as you,
 try moving towards them to give your bullets time to catch up.
@@ -204,27 +238,25 @@ want to make them easy to dodge.  Honing shots aim towards the top (the bottle
 cap) of your main weapon.  Therefore the top left and top right of the screen
 are good places for them to go.
 
-=============================================================================
+-----------------------------------------------------------------------------
 
-Changes:
+## Changes:
 
-2.0 version released on Sourceforge
-    - further worked on by Adam Borowski and loonycyborg on github
+### 2.0 version released on Sourceforge
+- further worked on by Adam Borowski and loonycyborg on github
 
-2.0w - a fork from loonycyborg's fork with minor fixes by WildPenguin:
-    - Sound is not clipping when multiple sound effects play at the same time
-      (clipping may still occur on some setups; I'm not familiar with Allegro)
-    - Sound is panning according to enemy location (toggleable in the menu)
-    - BEER.DAT restored from original DOS version (HS soing had a minor glitch)
-    - Some output to STDOUT to facilitate autosplitting / speedrunning
-    - some file handling fixes (more standard, packageable and easier to make
-      portable)
-    - files renamed to not be IN CAPITALS LIKE DOSLIKE.DAT IN 1993
-    - another secret cheat?!??
-    - . . . .
+### 2.1w - a fork from loonycyborg's fork with minor fixes by WildPenguin:
+- Sound is not clipping when multiple sound effects play at the same time (clipping may still occur on some setups; I'm not familiar with Allegro)
+- Sound is panning according to enemy location (toggleable in the menu)
+- BEER.DAT restored from original DOS version (HS soing had a minor glitch)
+- Some output to STDOUT to facilitate autosplitting / speedrunning
+- some file handling fixes (more standard, packageable and easier to make portable)
+- files renamed to not be IN CAPITALS LIKE DOSLIKE.DAT IN 1993
+- another secret cheat?!??
+- . . . .
 
-=============================================================================
-WEB LINKS
+-----------------------------------------------------------------------------
+## WEB LINKS
 
 SourceForge home https://sourceforge.net/projects/lasteichhof/
 Forked from: https://github.com/loonycyborg/TheLastEichhof
