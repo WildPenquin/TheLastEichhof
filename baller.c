@@ -128,8 +128,7 @@ void create_pages (void) {
   GameResY = YMAX+1;
 
   float aspect = (float) vignetres.X/ vignetres.Y;
-  // TODO: this is the ASPECT scaling. Implement INTEGER and STRETCH
-  if ( eichcfg.res.scale == STRETCH ) { // INTEGER scaling - use the maximum which can fit into vignet
+  if ( eichcfg.res.scale == STRETCH ) {
     if ( resverbose ) printf("Will use STRETCH scaling\n");
     paddedXres = GameResX;
     paddedYres = GameResY;
@@ -145,11 +144,12 @@ void create_pages (void) {
     paddedXres = aspect * GameResY;
     paddedYres = GameResX / aspect; 
     if ( aspect > (float) GameResX/GameResY ) {
-      if (resverbose) printf("Creating vignetted window\n");
+      if (resverbose) printf("Creating vignetted window (pillarboxed)\n");
       paddedYres = GameResY;
     } else if (aspect == (float) GameResX/GameResY) {
       if (resverbose) printf("Creating NON-vignetted window\n");
     } else {
+      if (resverbose) printf("Creating vignetted window (letterboxed)\n");
       paddedXres = GameResX;
     }
   }
