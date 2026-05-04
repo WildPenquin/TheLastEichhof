@@ -143,7 +143,7 @@ should go here (and hopefully only here)
 ------------------------------------------------------*/
 void populate_dirs() {
   snprintf(beerpaths.beerdatadir, PATH_MAX, "%s/%s", DATADIR, PACKAGE_NAME);
-  sprintf(beerpaths.exedir, ".");
+  readlink("/proc/self/exe", beerpaths.exedir, PATH_MAX);
   snprintf(beerpaths.localstatedir, PATH_MAX, "%s/%s", LOCALSTATEDIR, PACKAGE_NAME);
 
   if (char *xdgconfhome = getenv ("XDG_CONFIG_HOME")) {
@@ -184,6 +184,8 @@ void findbeerfiles() {
 
         snprintf(testfile, PATH_MAX, "%s/%s", beerpaths.beerdatadir, beerfile.name);
         if (access(testfile, R_OK) == 0) return beerpaths.beerdatadir;
+        snprintf(testfile, PATH_MAX, "%s/%s", beerpaths.exedir, beerfile.name);
+        if (access(testfile, R_OK) == 0) return beerpaths.exedir;
 
         if (access(beerfile.name, R_OK) == 0) return ".";
 
