@@ -1,4 +1,4 @@
-AC_INIT([lastbeer], [2.1W])
+AC_INIT([lastbeer], [2.12W])
 AM_INIT_AUTOMAKE
 AC_PROG_CC
 AC_CONFIG_FILES([Makefile])
