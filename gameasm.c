@@ -482,7 +482,7 @@ void a_foe (void) {
 	  goto nextcoord;
 	case FOESOUND:
 	  int pan =
-	    127 + panxplosion (-1) * (_obj[ptr->object].xa + _obj[ptr->object].xs / 2 * 255 / 320 - 127);
+	    127 + panxplosion (-1) * ( (_obj[ptr->object].xa + _obj[ptr->object].xs / 2) * 255 / 320 - 127);
       if ( playingvoices[pantrack_sndi].playing > -1 ) pantrack_sndi++;
       if (pantrack_sndi > 15) pantrack_sndi = 0; // loop if all sound "slots" have been already tracked
       playsample_tracking(&playingvoices[pantrack_sndi], ptrindex[lsndofs + ptr->cpath[1]], false, pan, &_obj[ptr->object].xa, _obj[ptr->object].xs);
