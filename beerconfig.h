@@ -31,7 +31,7 @@ struct graphic_s {
   enum scalingmode scale; 
 };
 
-#define CFG_REVISION PACKAGE_NAME"20SR:::wt"
+#define CFG_REVISION PACKAGE_NAME"21_______" // change if struct has been changed!
 
 static struct beerconfig_s {
   char versionstring[20];
