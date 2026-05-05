@@ -121,7 +121,7 @@ SAMPLE *create_SAMPLE (struct sndstrc *s) {
   /* UPDATED to adapt information from Dosbox Staging source -> */
   /* https://github.com/dosbox-staging/dosbox-staging/blob/main/src/hardware/audio/soundblaster.cpp */
   if (s->flags & SND_PACKED4) {
-    unsigned char *new_sample = malloc (1 + 2 * (sample->len - 1));
+    unsigned char *new_sample = malloc (2 * (sample->len) -1); // The first byte is ref, we are decoding len-1.
     int byte;
     unsigned char value;
     int i;
@@ -152,7 +152,7 @@ SAMPLE *create_SAMPLE (struct sndstrc *s) {
     for (i = 1; i < sample->len; i++) {
       for ( int j = 0; j <= 1 ; j++ ) {
         // higher or lower 4 bits
-        value = j > 0 ? s->data[i] & 0x0f : ( s->data[i] ) >> 4;
+        value = j > 0 ? s->data[i] & 0x0f : ( s->data[i] & 0xf0 ) >> 4;
         int map_i = value + step;
         // clamp to max_i = 63 (len-1)
         map_i = map_i < 0 ? 0 : map_i > 63 ? 63 : map_i;
@@ -163,7 +163,7 @@ SAMPLE *create_SAMPLE (struct sndstrc *s) {
             byte = 0xff;
         if (byte < 0x00)
             byte = 0x00;
-        new_sample[2*i + j] = byte;
+        new_sample[2*i -1 + j] = byte;
       }
     }
 
