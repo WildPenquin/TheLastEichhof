@@ -124,9 +124,9 @@ SAMPLE *create_SAMPLE (struct sndstrc *s) {
     unsigned char *new_sample = malloc (2 * (sample->len) -1); // The first byte is ref, we are decoding len-1.
     int byte;
     unsigned char value;
-    int i;
 
-    int step = 0; //, shift; //  limit , sign;
+    int map_i; // index for lookup tables
+    int step = 0;
 
     byte = s->data[0];
     new_sample[0] = byte;
@@ -149,26 +149,25 @@ SAMPLE *create_SAMPLE (struct sndstrc *s) {
         240, 0, 0, 0, 0,  0,  0,  0
     };
 
-    for (i = 1; i < sample->len; i++) {
-      for ( int j = 0; j <= 1 ; j++ ) {
+    for (int i = 1; i < sample->len; i++) {
+      for ( int j = 1; j >= 0 ; j-- ) { // low<>high bits
+        new_sample++;
         // higher or lower 4 bits
-        value = j > 0 ? s->data[i] & 0x0f : ( s->data[i] & 0xf0 ) >> 4;
-        int map_i = value + step;
+        value = j == 0 ? s->data[i] & 0x0f : ( s->data[i] & 0xf0 ) >> 4;
+        map_i = value + step;
         // clamp to max_i = 63 (len-1)
         map_i = map_i < 0 ? 0 : map_i > 63 ? 63 : map_i;
-        step = ( step + sndsb_adpcm_4bit_adjustmap[map_i]) & 0xff; // why this and? drop >8 bits?
+        step = ( step + sndsb_adpcm_4bit_adjustmap[map_i]) & 0xff; // why this AND? drop >8 bits?
         byte = ( byte + sndsb_adpcm_4bit_scalemap[map_i] );
         // clamp to 0 ... 255
-        if (byte > 0xff)
-            byte = 0xff;
-        if (byte < 0x00)
-            byte = 0x00;
-        new_sample[2*i -1 + j] = byte;
+        byte = byte < 0 ? 0 : byte > 255 ? 255 : byte;
+        new_sample[0] = byte;
       }
     }
 
+    new_sample-=2 * ( sample->len - 1 ); // restore pointer to beginning
     sample->data = new_sample;
-    sample->len = 1 + 2 * (sample->len - 1);
+    sample->len = 2 * (sample->len) - 1 ;
 
   }
 
