@@ -52,7 +52,7 @@ void haltsound (void) {
   remove_sound ();
   if (eichcfg.ss.sound) {
     reserve_voices (8, 0);
-    set_volume_per_voice (3);
+    set_volume_per_voice (eichcfg.ss.scale);
     install_sound (DIGI_AUTODETECT, MIDI_NONE, 0);
   }
 }

@@ -2,6 +2,7 @@ struct sound_s {
   bool sound;
   bool pan_foes;
   bool pan_sfx;
+  short scale; // increase if you get clipping in-game (but will decrease overall volume)
 };
 
 struct resolution_s {
@@ -31,7 +32,7 @@ struct graphic_s {
   enum scalingmode scale; 
 };
 
-#define CFG_REVISION PACKAGE_NAME"21_______" // change if struct has been changed!
+#define CFG_REVISION PACKAGE_NAME"212______" // change if struct has been changed!
 
 static struct beerconfig_s {
   char versionstring[20];
@@ -52,7 +53,7 @@ static struct beerconfig_s {
     KEY_DOWN,
     KEY_SPACE,
     KEY_P,
-    { true, true, true }, // sound
+    { true, true, true, 2 }, // sound
     { 
       { 0 , 0 }, // xmodeasm will auto-detect
       { 0 , 0 },

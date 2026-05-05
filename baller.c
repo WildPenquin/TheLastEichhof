@@ -216,20 +216,27 @@ void cmdline (int argc, char *argv[]) {
   char *e1;
 
   void printhelpstring() {
-    printf ("Syntax:           BALLER [options]\n");
+    printf ("Syntax:           beer [options]\n");
     printf ("  /ns             Play without sound.\n");
     printf ("  -x 960 -y 660   set window resolution,\n");
     printf ("  -X 3440 -Y 1440 set another resolution,\n");
     printf ("  -r              Reset / auto-detect window resolution.\n");
     printf ("  -R              Reset / auto-detect another resolution.\n");
     printf ("  -s a|i|s        Use aspect (default), integer or stretch scaling.\n");
+    printf ("  -f              Toggle real fullscreen for the other resolution \n");
+    printf ("                  WARNING: input broken on Wayland FS Allegro4 applications!\n");
+    printf ("  -d 2            Set volume scaling parameter. If sound effects are clipping,\n");
+    printf ("                  increase this at the cost of lower overall volume (default:2)\n");
     printf ("  -v              Toggle verbosity to STDOUT.\n");
     printf ("  -l              Toggle speedrunning lap times to STDOUT.\n");
+#ifdef __DOS__
     printf ("\n");
     printf
       ("To force SoundBlaster on, use the BLASTER environment variable.\n");
     printf ("  e.g. set BLASTER = A220 I7 D1\n");
+#endif
     printf ("\n\n");
+
   }
 
 // Concatenate all command strings together in 'cmd'.
@@ -238,10 +245,16 @@ void cmdline (int argc, char *argv[]) {
     if (strlen (cmd) + strlen (argv[i]) < CMDLEN)
       strcat (cmd, argv[i]);
   }
-  strupr (cmd);
+
+// Help?
+  if (strstr (cmd, "/?") || strstr (cmd, "-?") || strstr(cmd, "-h")
+       || strstr (cmd, "/h") || strstr (cmd, "--help")) {	// Help?
+    printhelpstring();
+    exit (0);			// Exit nicely.
+  }
 
   int c;
-  while ((c = getopt(argc, argv, ":x:y:X:Y:rRfs:vl")) != -1) {
+  while ((c = getopt(argc, argv, ":x:y:X:Y:rRfs:vld:h")) != -1) {
     switch(c) {
       case 'x':
         eichcfg.res.window.X = atoi(optarg);
@@ -255,6 +268,9 @@ void cmdline (int argc, char *argv[]) {
       case 'Y':
         eichcfg.res.full.Y = atoi(optarg);
         break;
+      case 'd':
+        eichcfg.ss.scale = atoi(optarg);
+        break;
       case 'f':
         eichcfg.res.truefullscreen = !eichcfg.res.truefullscreen;
         break;
@@ -263,6 +279,10 @@ void cmdline (int argc, char *argv[]) {
         break;
       case 'R':
         eichcfg.res.full.X = eichcfg.res.full.Y = 0;
+        break;
+      case 'h':
+        printhelpstring();
+        exit(0);
         break;
       case 's':
         if ( strcmp(optarg, "a" ) == 0 ) eichcfg.res.scale = ASPECT;
@@ -279,15 +299,12 @@ void cmdline (int argc, char *argv[]) {
         printf("Speedrun output toggled: %s\n", eichcfg.misc.speedrun ? "ON " :"OFF");
         break;
       case '?':
-                    fprintf(stderr,
-                "Unrecognized option: '-%c'\n", optopt);
+        fprintf(stderr,
+          "Unrecognized option: '-%c'\n", optopt);
+        printhelpstring();
+        exit(0);
+        break;
     }
-  }
-
-// Help?
-  if (strstr (cmd, "/?") || strstr (cmd, "-?") || strstr(cmd, "-h") ) {	// Help?
-    printhelpstring();
-    exit (0);			// Exit nicely.
   }
 
   // Get cheat level.
