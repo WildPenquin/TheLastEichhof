@@ -2,6 +2,7 @@
 #include "sound.h"
 #include <stdio.h>
 #include "beerconfig.h"
+#include "adpcm_decode.h"
 
 /*speaker:
    state == 0  : Turn sound off.
@@ -121,53 +122,55 @@ SAMPLE *create_SAMPLE (struct sndstrc *s) {
   /* UPDATED to adapt information from Dosbox Staging source -> */
   /* https://github.com/dosbox-staging/dosbox-staging/blob/main/src/hardware/audio/soundblaster.cpp */
   if (s->flags & SND_PACKED4) {
-    unsigned char *new_sample = malloc (2 * (sample->len) -1); // The first byte is ref, we are decoding len-1.
-    int byte;
-    unsigned char value;
+    sample->data = adpcm4decode_ban(s->data, sample->len);
+    sample->len = 2 * sample->len;
+    // unsigned char *new_sample = malloc (2 * (sample->len) ); // The first byte is ref, we are decoding len-1.
+    // int byte;
+    // unsigned char value;
 
-    int map_i; // index for lookup tables
-    int step = 0;
+    // int map_i; // index for lookup tables
+    // int step = 0;
 
-    byte = s->data[0];
-    new_sample[0] = byte;
+    // byte = 0x7f;
+    // new_sample[0] = byte;
 
-    const signed char sndsb_adpcm_4bit_scalemap[64] = {
-        0,  1,  2,  3,  4,  5,  6,  7,  0,  -1,  -2,  -3,  -4,  -5,  -6,  -7,
-        1,  3,  5,  7,  9, 11, 13, 15, -1,  -3,  -5,  -7,  -9, -11, -13, -15,
-        2,  6, 10, 14, 18, 22, 26, 30, -2,  -6, -10, -14, -18, -22, -26, -30,
-        4, 12, 20, 28, 36, 44, 52, 60, -4, -12, -20, -28, -36, -44, -52, -60
-    };
+    // const signed char sndsb_adpcm_4bit_scalemap[64] = {
+    //     0,  1,  2,  3,  4,  5,  6,  7,  0,  -1,  -2,  -3,  -4,  -5,  -6,  -7,
+    //     1,  3,  5,  7,  9, 11, 13, 15, -1,  -3,  -5,  -7,  -9, -11, -13, -15,
+    //     2,  6, 10, 14, 18, 22, 26, 30, -2,  -6, -10, -14, -18, -22, -26, -30,
+    //     4, 12, 20, 28, 36, 44, 52, 60, -4, -12, -20, -28, -36, -44, -52, -60
+    // };
 
-    const signed char sndsb_adpcm_4bit_adjustmap[64] = {
-          0, 0, 0, 0, 0, 16, 16, 16,
-          0, 0, 0, 0, 0, 16, 16, 16,
-        240, 0, 0, 0, 0, 16, 16, 16,
-        240, 0, 0, 0, 0, 16, 16, 16,
-        240, 0, 0, 0, 0, 16, 16, 16,
-        240, 0, 0, 0, 0, 16, 16, 16,
-        240, 0, 0, 0, 0,  0,  0,  0,
-        240, 0, 0, 0, 0,  0,  0,  0
-    };
+    // const signed char sndsb_adpcm_4bit_adjustmap[64] = {
+    //       0, 0, 0, 0, 0, 16, 16, 16,
+    //       0, 0, 0, 0, 0, 16, 16, 16,
+    //     240, 0, 0, 0, 0, 16, 16, 16,
+    //     240, 0, 0, 0, 0, 16, 16, 16,
+    //     240, 0, 0, 0, 0, 16, 16, 16,
+    //     240, 0, 0, 0, 0, 16, 16, 16,
+    //     240, 0, 0, 0, 0,  0,  0,  0,
+    //     240, 0, 0, 0, 0,  0,  0,  0
+    // };
 
-    for (int i = 1; i < sample->len; i++) {
-      for ( int j = 1; j >= 0 ; j-- ) { // low<>high bits
-        new_sample++;
-        // higher or lower 4 bits
-        value = j == 0 ? s->data[i] & 0x0f : ( s->data[i] & 0xf0 ) >> 4;
-        map_i = value + step;
-        // clamp to max_i = 63 (len-1)
-        map_i = map_i < 0 ? 0 : map_i > 63 ? 63 : map_i;
-        step = ( step + sndsb_adpcm_4bit_adjustmap[map_i]) & 0xff; // why this AND? drop >8 bits?
-        byte = ( byte + sndsb_adpcm_4bit_scalemap[map_i] );
-        // clamp to 0 ... 255
-        byte = byte < 0 ? 0 : byte > 255 ? 255 : byte;
-        new_sample[0] = byte;
-      }
-    }
+    // for (int i = 0; i < sample->len; i++) {
+    //   for ( int j = 1; j >= 0 ; j-- ) { // low<>high bits
+    //     // higher or lower 4 bits
+    //     value = j == 0 ? s->data[i] & 0x0f : ( s->data[i] & 0xf0 ) >> 4;
+    //     map_i = value + step;
+    //     // clamp to max_i = 63 (len-1)
+    //     map_i = map_i < 0 ? 0 : map_i > 63 ? 63 : map_i;
+    //     step = ( step + sndsb_adpcm_4bit_adjustmap[map_i]) & 0xff; // why this AND? drop >8 bits?
+    //     byte = ( byte + sndsb_adpcm_4bit_scalemap[map_i] );
+    //     // clamp to 0 ... 255
+    //     byte = byte < 0 ? 0 : byte > 255 ? 255 : byte;
+    //     new_sample[0] = byte;
+    //     new_sample++;
+    //   }
+    // }
 
-    new_sample-=2 * ( sample->len - 1 ); // restore pointer to beginning
-    sample->data = new_sample;
-    sample->len = 2 * (sample->len) - 1 ;
+    // new_sample-=2 * ( sample->len ); // restore pointer to beginning
+    // sample->data = new_sample;
+    // sample->len = 2 * (sample->len) ;
 
   }
 

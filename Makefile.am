@@ -8,7 +8,7 @@ bin_PROGRAMS = beer
 beer_SOURCES = fileman.c fileman.h xmode.h xmodeasm.c xmodec.c \
 		 xmodedef.c soundc.c sound.h gameasm.c baller.h \
 		 support.c gameplay.c shop.c menu.c baller.c hiscore.c \
-		 intro.c
+		 intro.c adpcm_decode.c
 
 # dist_localstate_DATA = conf_hs.bin
 dist_pkgdata_DATA = lastbeer.bin
