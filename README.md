@@ -275,6 +275,7 @@ are good places for them to go.
   (in case it's format changes, the game should detect it)
 - Command line parsing / helpstring fixes
 - Cheaters should not be able to enter highscores.
+- Should damping default is now 2. I believe incorrect ADPCM decoding increased the likelihood of clipping -> less likely now. Increase the value if you get clipping, or maybe even decrease to 1!
 
 -----------------------------------------------------------------------------
 ## WEB LINKS
