@@ -245,15 +245,36 @@ are good places for them to go.
 ### 2.0 version released on Sourceforge
 - further worked on by Adam Borowski and loonycyborg on github
 
-### 2.1w - a fork from loonycyborg's fork with minor fixes by WildPenguin:
-- Sound is not clipping when multiple sound effects play at the same time (clipping may still occur on some setups; I'm not familiar with Allegro)
-- Sound is panning according to enemy location (toggleable in the menu)
-- BEER.DAT restored from original DOS version (HS soing had a minor glitch)
-- Some output to STDOUT to facilitate autosplitting / speedrunning
-- some file handling fixes (more standard, packageable and easier to make portable)
-- files renamed to not be IN CAPITALS LIKE DOSLIKE.DAT IN 1993
-- another secret cheat?!??
-- . . . .
+### 2.11w - a fork from loonycyborg's fork with minor fixes by WildPenguin
+
+ **There are no gameplay-changing changes in this fork (so far).**
+
+#### Sound improvements:
+- No more clipping (on most systems)
+- Sound is a bit more quiet. Allegro4 does not have mixing capabilities, this is how it handles stuff.
+- Panning sound effects (option, enabled per default)!
+#### Video improvements:
+- Two toggleable, user-settable resolutions
+- Real fullscreen is buggy but can be enabled (-f) - usable only under X.Org
+- Scaling modes (aspect/integer/stretch)
+#### File handling changes:
+- Configuration and highscore files are now separate; highscore file could be installed separately for multi-user systems
+- Game looks for files in most common locations; easier to port to other systems?
+#### Configuration changes
+- Stereo (pannig sfx) can be set in options
+- some options only on command line. See 'beer /?'
+#### Miscellaneous
+- Another hidden cheat! (see source)
+- Useful output for speedrunners in STDOUT
+- When buying a new weapon and cancelling, the money is not lost for nothing anymore
+- Some other minor fixes too insignificant and numerous to list here
+
+### 2.12w
+- ADPCM decoding done properly now (I hope!)
+- A similar check to highscore file as to configuration file
+  (in case it's format changes, the game should detect it)
+- Command line parsing / helpstring fixes
+- Cheaters should not be able to enter highscores.
 
 -----------------------------------------------------------------------------
 ## WEB LINKS
