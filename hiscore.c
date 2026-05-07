@@ -166,20 +166,21 @@ void highscore (char fullmode) {
     currentpl = 0;
     while (!inlist && currentpl < MAXENTRIES) {
       if (score <= hstxt.player[currentpl].score)
-	currentpl++;
-      else
-	inlist = TRUE;
+	    currentpl++;
+      else inlist = TRUE;
+      }
+    if ( cheatlevel != 0 || cheatstage != 0 ) { // Check we are not cheating
+      inlist = FALSE;
     }
-
 // Is in highscore
 
     if (inlist) {
       for (i = MAXENTRIES - 1; i > currentpl; i--)
-	hstxt.player[i] = hstxt.player[i - 1];
+	    hstxt.player[i] = hstxt.player[i - 1];
       strcpy (hstxt.player[currentpl].name, "");
       hstxt.player[currentpl].score = score;
       if (currentpl == 0)
-	strcpy (hstxt.winnertext, "");
+	    strcpy (hstxt.winnertext, "");
 
     }
   }
@@ -298,7 +299,9 @@ void highscore (char fullmode) {
 
 // Not in highscore
 
-    writetext (NXOFFS, YOFFS + (MAXENTRIES + 1) * 14 - 3, "YOUR SCORE", font);
+    writetext (NXOFFS, YOFFS + (MAXENTRIES + 1) * 14 - 3,
+        ( cheatstage == 0 && cheatlevel == 0 ) ? "YOUR SCORE" : "CHEATER!",
+        font);
     writenumber (SXOFFS, YOFFS + (MAXENTRIES + 1) * 14 - 3, score, font);
     showpage (page);
   }
