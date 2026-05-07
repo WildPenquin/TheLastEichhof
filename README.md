@@ -8,6 +8,9 @@ This repo is forked from loonycyborg's repo and minor fixes by WildPenguin 2026.
 
 ## INSTALLATION
 
+For Arch-based distributions, there is a PKGBUILD in AUR. Should work on any such
+distro, if they pack allegro4, as the game has no other dependencies.
+
 On a Unix-like system, run ./configure followed by make install. High score and
 config will be put in user home directory (according to `XDG_CONFIG_HOME` or 
 `HOME` variables, most probably in $HOME/.config/lastbeer).
