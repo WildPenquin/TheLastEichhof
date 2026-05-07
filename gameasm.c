@@ -895,6 +895,13 @@ int play () {
     }
 
 
+     /// There is just a lot of debug / verbose printing code here; remove?
+    /// very little actual code;
+    /// - go trough sounds in playingvoices (up to pantrack_sndi which should be the larges index)
+    /// - check sound source location, calculate panning value accordingly
+    /// - set the pan value
+    /// - remove / release voices not playing anymore
+    ///
     if ( eichcfg.misc.verbose) { 
       printf("\rF%i", count);
       sprintf(panvoicestatus, 
@@ -904,10 +911,10 @@ int play () {
     char panvoicest_post[20] = "LOC ";
     int nvs = 3;
     for (int ptdi = pantrack_sndi; ptdi >= 0; ptdi-- ) {
-      if ( playingvoices[ptdi].playing > -1 ) { // && voice_get_position(playingvoices[0]->playing) > -1 ) { //  && voice_get_position(0) > -1 ) {
+      if ( playingvoices[ptdi].playing > -1 ) {
         if ( voice_get_position(playingvoices[ptdi].playing) > -1 ) {
 	      float pan =
-	        127 + panxplosion (-1) * (
+	        127 + panxplosion (-1) * ( // check if pan enabled?
                 ( *playingvoices[ptdi] . locT + ( playingvoices[ptdi] . sizeT / 2 ) ) // center
                 * (float) 255 / 320
                 - 127
@@ -915,7 +922,7 @@ int play () {
             ;
           if ( eichcfg.misc.verbose) {
             char ptdic[20];
-            sprintf(ptdic, "%X", ptdi%16); // printf("W");
+            sprintf(ptdic, "%X", ptdi%16);
             strncpy(&panvoicestatus[(int) pan * 80 / 255], ptdic, 1);
             snprintf(ptdic, 20, "%3i:", (int) pan);
             strcat(panvoicest_pre, ptdic);
@@ -923,7 +930,7 @@ int play () {
             strcat(panvoicest_post, ptdic);
             nvs--;
           }
-          voice_set_pan(playingvoices[ptdi] . playing, (int) pan);
+          voice_set_pan(playingvoices[ptdi] . playing, (int) pan); // this is the important bit
         } else { // done with a panning sound ? 
           release_voice (playingvoices[ptdi].playing);
           playingvoices[ptdi].playing=-1;
