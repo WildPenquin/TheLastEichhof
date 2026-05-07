@@ -907,8 +907,8 @@ int play () {
       sprintf(panvoicestatus, 
         "--------------------------------------------------------------------------------");
     }
-    char panvoicest_pre[20] = "PAN ";
-    char panvoicest_post[20] = "LOC ";
+    char panvoicest_pre[60] = "PAN ";
+    char panvoicest_post[60] = "LOC ";
     int nvs = 3;
     for (int ptdi = pantrack_sndi; ptdi >= 0; ptdi-- ) {
       if ( playingvoices[ptdi].playing > -1 ) {
@@ -944,7 +944,6 @@ int play () {
     if (eichcfg.misc.verbose) { // Just some prettier formatting
       while ( nvs > 0 ) {
       char ptdic[20];
-        snprintf(ptdic, 20, "%3i:", (int) 0);
         snprintf(ptdic, 20, "%3i:", (int) 0);
         strcat(panvoicest_pre, ptdic);
         snprintf(ptdic, 20, "%3i.%3i ; ", 0, 0);
