@@ -187,8 +187,8 @@ side.  Watch out for the large, slow round white missiles that are aimed at
 you.  You should try either to be high up at the sides or near the bottom
 at centre when they are released, but avoid the corners.
 
-
 ### 2 Weissbier
+
 When going past the exploding barrels, try to remember which ones you
 have shot the most to anticipate which will explode first.
 
@@ -243,6 +243,7 @@ are good places for them to go.
 ## Changes:
 
 ### 2.0 version released on Sourceforge
+
 - further worked on by Adam Borowski and loonycyborg on github
 
 ### 2.11w - a fork from loonycyborg's fork with minor fixes by WildPenguin
@@ -250,26 +251,36 @@ are good places for them to go.
  **There are no gameplay-changing changes in this fork (so far).**
 
 #### Sound improvements:
+
 - No more clipping (on most systems)
 - Sound is a bit more quiet. Allegro4 does not have mixing capabilities, this is how it handles stuff.
 - Panning sound effects (option, enabled per default)!
+
 #### Video improvements:
+
 - Two toggleable, user-settable resolutions
 - Real fullscreen is buggy but can be enabled (-f) - usable only under X.Org
 - Scaling modes (aspect/integer/stretch)
+
 #### File handling changes:
+
 - Configuration and highscore files are now separate; highscore file could be installed separately for multi-user systems
 - Game looks for files in most common locations; easier to port to other systems?
+
 #### Configuration changes
+
 - Stereo (pannig sfx) can be set in options
 - some options only on command line. See 'beer /?'
+
 #### Miscellaneous
+
 - Another hidden cheat! (see source)
 - Useful output for speedrunners in STDOUT
 - When buying a new weapon and cancelling, the money is not lost for nothing anymore
 - Some other minor fixes too insignificant and numerous to list here
 
 ### 2.12w
+
 - ADPCM decoding done properly now (I hope!)
 - A similar check to highscore file as to configuration file
   (in case it's format changes, the game should detect it)
@@ -279,13 +290,9 @@ are good places for them to go.
 
 -----------------------------------------------------------------------------
 ## WEB LINKS
+-----------------------------------------------------------------------------
 
-SourceForge home https://sourceforge.net/projects/lasteichhof/
-Forked from: https://github.com/loonycyborg/TheLastEichhof
-
-Alpha-Helix used to have a website at
-http://www.ife.ee.ethz.ch/~ammann/alphahelix/eichhof/.  The Internet Archive
-has an archived version at
-
-https://web.archive.org/web/20050829001932/http://www.ife.ee.ethz.ch/~ammann/
-alphahelix/eichhof/
+- SourceForge home https://sourceforge.net/projects/lasteichhof/
+- Forked from: https://github.com/loonycyborg/TheLastEichhof
+- Alpha-Helix used to have a website at: http://www.ife.ee.ethz.ch/~ammann/alphahelix/eichhof/.  
+- The Internet Archive has an archived version at: https://web.archive.org/web/20050829001932/http://www.ife.ee.ethz.ch/~ammann/alphahelix/eichhof/
