@@ -61,7 +61,7 @@ I'm assuming it originally intended to have square PAR, but on a real CRT, you
 could adjust to fill the whole 4:3, if you so desired - achieving non-1:1 PAR. 
 Many DOS game have similar peculiarities (compared to modern games).
 
-The current implementation will always use correct aspect ratio, ASSUMING Blick 
+The current implementation will always use correct aspect ratio, ASSUMING Blick
 intro is 4:3 (PAR ~1,37), but in-game PAR is 1:1. But some other assumptions 
 could be just as valid, and user might just have preferences.
 
@@ -69,30 +69,47 @@ This means you will get pillarboxing (or letterboxing) if your resolution is
 not a multiple of the game resolution 16x11 (320x220), or 4:3 for the Blick intro 
 (but the Blick intro graphics has a black backdrop anyways...).
 
+You can achieve a non-16:11 resolution (non-1:1 PAR) in-game by setting the scaling
+to stretch (parameter `-s s`) and any arbitrary window resolution. With aspect
+scaling (parameter `-s a`), it is not possible to set other than 1:1 PAR currently
+(a custom PAR would be veru easy to implement, though) - so you can not set custom
+pillar/letterboxing. Play with the window somehow =).
+
 If you are not satisfied with the scaling options the game currently offers,
 set a resolution of 320 x 220 (or whatever you like) and use gamescope. However
 gamescope causes some very minor glitches with some timing (mainly effects the
-shop money decrement animation, I haven't noticed in-game effects).
+shop money decrement animation, which relies on drawing being "slow"?, I haven't
+noticed any in-game effects).
 
 ## KNOWN ISSUES
+
+### About Allegro4 and it's limitations
 
 This game uses Allegro 4. That library is ancient and unmaintained (Allegro5 is 
 active).
 
-Especially when playing on Wayland, fullscreen doesn't work properly. The game
-has trouble registering keystrokes, if fullscreen (no problems under X.Org). 
+Especially when playing on Wayland, fullscreen doesn't work properly; the game
+has trouble registering keystrokes (no problems under X.Org).
 
 As a workaround, the game currently uses just two resolutions, Set the other to
 a small one and the other to a large one (like your desktop) and use your VM to 
 remove decorations to get a "fake fullscreen", aka "borderless fullscreen 
 window" in other games. I don't know how to remove window decorations (possibly
-doable, at least in some hacky way, but not platform independent).
+doable, at least in some hacky way, but not platform independent). If you are
+running X.Org, you may want to try true fullscreen.
 
-TODO: Make true fullscreen settable (true fullscreen should work on X.Org).
+### Differences from the original DOS version
 
-TODO: Port to Allegro 5 =)
+The port is almost faithful, gameplay-wise. There are small differences and the
+port is slightly easier. The animation is smoother - however, weapons are also a
+bit different. At least the "Pony" weapon reaches further and the angle is
+wider. I also have a hunch the fire rate is slightly faster.
 
-COPYING
+I'm not sure these differences are worth fixing, as it's very much playable and
+fun as it stand. But pull requests aiming at making this port more faithful
+to the original are welcome =)
+
+## COPYING
 
 Original source code for MS-DOS released by Dany Schoch under the following
 licence:
