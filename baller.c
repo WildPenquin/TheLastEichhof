@@ -273,6 +273,7 @@ void cmdline (int argc, char *argv[]) {
         break;
       case 'f':
         eichcfg.res.truefullscreen = !eichcfg.res.truefullscreen;
+        printf("True fullscreen toggled: %s\n", eichcfg.res.truefullscreen ? "ON " :"OFF");
         break;
       case 'r':
         eichcfg.res.window.X = eichcfg.res.window.Y = 0;
