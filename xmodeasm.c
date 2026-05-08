@@ -49,10 +49,12 @@ void setxmode (void) {
   destroy_pages();
   if (eichcfg.res.fullscreen) {
     allegrogfxmode = eichcfg.res.truefullscreen ? GFX_AUTODETECT_FULLSCREEN : GFX_AUTODETECT_WINDOWED;
+    printf("Setting gfx mode to %i x %i\n", eichcfg.res.full.X, eichcfg.res.full.Y);
     set_gfx_mode(allegrogfxmode,
         eichcfg.res.full.X, eichcfg.res.full.Y,
         0, 0);
   } else {
+    printf("Setting gfx mode to %i x %i\n", eichcfg.res.window.X, eichcfg.res.window.Y);
     set_gfx_mode(allegrogfxmode,
         eichcfg.res.window.X, eichcfg.res.window.Y,
         0, 0);
